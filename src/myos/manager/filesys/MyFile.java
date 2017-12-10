@@ -1,7 +1,6 @@
-package myos.manager.file;
+package myos.manager.filesys;
 
 import java.io.File;
-import java.util.Date;
 
 /**
  * Created by lindanpeng on 2017/10/15.
@@ -16,12 +15,11 @@ public class MyFile {
     /*是否目录*/
     private boolean isDir;
     /*文件长度*/
-    private long length;
+    private int length;
     /*文件的物理位置*/
     private int position;
     /*文件内容*/
     private byte[] content;
-    private File file;
 
     public boolean isCanRead() {
         return canRead;
@@ -56,14 +54,6 @@ public class MyFile {
     }
 
 
-    public long getLength() {
-        return length;
-    }
-
-    public void setLength(long length) {
-        this.length = length;
-    }
-
     public int getPosition() {
         return position;
     }
@@ -80,11 +70,4 @@ public class MyFile {
         this.content = content;
     }
 
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
 }
