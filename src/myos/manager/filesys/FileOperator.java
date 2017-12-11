@@ -1,14 +1,16 @@
 package myos.manager.filesys;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by lindanpeng on 2017/12/6.
  */
 public class FileOperator {
+    private Fat fat;
     List<OpenedFile> openedFiles;
-    public FileOperator(List<OpenedFile> openedFiles){
-        this.openedFiles=openedFiles;
+    public FileOperator(Fat fat){
+        this.openedFiles=new ArrayList<>();
     }
     /**
      * 建立文件

@@ -8,7 +8,7 @@ public class OsConstant {
      * 磁盘相关
      */
     public static final int PHYSICAL_BLOCK_SIZE = 64;//物理块大小
-    public static final int PHYSICAL_BLOCK_QUNTITY = 256;//物理块数量
+    public static final int PHYSICAL_BLOCK_QUNTITY = 128;//物理块数量
     /**
      * 内存相关
      */
