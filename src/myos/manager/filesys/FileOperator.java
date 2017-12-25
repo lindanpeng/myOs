@@ -29,8 +29,8 @@ public class FileOperator {
     RandomAccessFile disk;
     //进程操作
     ProcessOperator processOperator;
-    public FileOperator(RandomAccessFile disk) {
-        //this.memory=memory;
+    public FileOperator(RandomAccessFile disk,ProcessOperator processOperator) {
+        this.processOperator=processOperator;
         this.fat = fat;
         this.disk = disk;
         this.openedFiles = new ArrayList<>();

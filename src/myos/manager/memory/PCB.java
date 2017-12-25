@@ -7,6 +7,7 @@ public class PCB {
     public static final int STATUS_WAIT=0;//就绪
     public static final int STATUS_RUN=1;//运行
     public static final int STATUS_BLOCK=2;//阻塞
+    public static final int STATUS_HANG_OUT=3;//闲逛
     private static  int idGenerator =1;
     //进程唯一标识符
     private int PID;
@@ -17,15 +18,14 @@ public class PCB {
     //程序计数器，相对于memStart
     private int counter;
     //寄存器数据
-    private int IR;
     private int AX;
     private int BX;
     private int CX;
     private int DX;
     //指向进程的程序和数据在内存中的首地址
     private int memStart;
-    //程序、数据长度
-    private int length;
+    //指向进程的程序和数据在内存中的尾地址
+    private int memEnd;
     //事件
     private int event;
     public PCB(){
@@ -65,13 +65,6 @@ public class PCB {
         this.counter = counter;
     }
 
-    public int getIR() {
-        return IR;
-    }
-
-    public void setIR(int IR) {
-        this.IR = IR;
-    }
 
     public int getAX() {
         return AX;
@@ -89,12 +82,12 @@ public class PCB {
         this.memStart = memStart;
     }
 
-    public int getLength() {
-        return length;
+    public int getMemEnd() {
+        return memEnd;
     }
 
-    public void setLength(int length) {
-        this.length = length;
+    public void setMemEnd(int memEnd) {
+        this.memEnd = memEnd;
     }
 
     public int getEvent() {
@@ -103,5 +96,29 @@ public class PCB {
 
     public void setEvent(int event) {
         this.event = event;
+    }
+
+    public int getBX() {
+        return BX;
+    }
+
+    public void setBX(int BX) {
+        this.BX = BX;
+    }
+
+    public int getCX() {
+        return CX;
+    }
+
+    public void setCX(int CX) {
+        this.CX = CX;
+    }
+
+    public int getDX() {
+        return DX;
+    }
+
+    public void setDX(int DX) {
+        this.DX = DX;
     }
 }

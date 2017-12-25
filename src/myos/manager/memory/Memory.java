@@ -19,6 +19,10 @@ public class Memory {
     private Queue<PCB> waitPCB;
     //阻塞进程控制块
     private Queue<PCB> blockPCB;
+    //运行进程
+    private PCB runningPCB;
+    //闲逛进程
+    private PCB hangOutPCB;
     //用户区内存
     private byte[] userArea;
     public Memory() {
@@ -35,6 +39,9 @@ public class Memory {
         }
         waitPCB = new LinkedList<>();
         blockPCB = new LinkedList<>();
+        hangOutPCB=new PCB();
+        hangOutPCB.setStatus(PCB.STATUS_HANG_OUT);
+        runningPCB=hangOutPCB;
         userArea = new byte[OsConstant.USER_AREA_SIZE];
     }
 
@@ -76,5 +83,17 @@ public class Memory {
 
     public void setUserArea(byte[] userArea) {
         this.userArea = userArea;
+    }
+
+    public PCB getRunningPCB() {
+        return runningPCB;
+    }
+
+    public void setRunningPCB(PCB runningPCB) {
+        this.runningPCB = runningPCB;
+    }
+
+    public PCB getHangOutPCB() {
+        return hangOutPCB;
     }
 }

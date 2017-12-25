@@ -2,13 +2,11 @@ package myos.manager.process;
 
 import myos.constant.OsConstant;
 import myos.manager.filesys.FileOperator;
-import myos.manager.filesys.OpenedFile;
 import myos.manager.memory.Memory;
 import myos.manager.memory.PCB;
 import myos.manager.memory.SubArea;
 
 import java.util.ListIterator;
-import java.util.Properties;
 import java.util.Queue;
 
 /**
@@ -17,10 +15,10 @@ import java.util.Queue;
  */
 public class ProcessOperator {
     private Memory memory;
-    private FileOperator fileOperator;
-    public ProcessOperator(Memory memory,FileOperator fileOperator){
+    private CPU cpu;
+    public ProcessOperator(CPU cpu,Memory memory ){
         this.memory=memory;
-        this.fileOperator=fileOperator;
+        this.cpu=cpu;
     }
     /**
      * 为打开的可执行文件创建进程
@@ -57,10 +55,16 @@ public class ProcessOperator {
        }
         //初始化进程控制块
         freePCB.setMemStart(subArea.getStartAdd());
-        freePCB.setLength(program.length);
+        freePCB.setMemEnd(program.length);
         freePCB.setCounter(0);
         freePCB.setStatus(PCB.STATUS_WAIT);
-        memory.getWaitPCB().offer(freePCB);
+        //判断当前是否有运行进程，没有的将该进程设置为运行进程，否则添加到就绪进程队列
+        if (memory.getRunningPCB()==null||memory.getRunningPCB().getStatus()==PCB.STATUS_HANG_OUT)
+            memory.setRunningPCB(freePCB);
+        else
+            memory.getWaitPCB().offer(freePCB);
+
     }
+
 
 }
