@@ -1,6 +1,10 @@
 import myos.constant.OsConstant;
 import myos.manager.filesys.Catalog;
 import myos.manager.filesys.FileOperator;
+import myos.manager.memory.Memory;
+import myos.manager.process.CPU;
+import myos.manager.process.Clock;
+import myos.manager.process.ProcessOperator;
 
 import java.io.*;
 import java.util.List;
@@ -11,8 +15,13 @@ import static myos.constant.OsConstant.DISK_BLOCK_SIZE;
 
 public class OS {
 
-  //  private byte[] memory=new byte[1024];
     private FileOperator fileOperator;//文件操作管理
+    private ProcessOperator processOperator;
+    private CPU cpu;
+    private Memory memory;
+    private Clock clock;
+
+    //模拟磁盘
     private RandomAccessFile disk;
     public OS(){
         init();
@@ -23,7 +32,13 @@ public class OS {
      */
     public void init(){
        initDisk();
-       loadToMemory();
+       memory=new Memory();
+       cpu=new CPU(memory);
+       clock=new Clock(cpu);
+       processOperator=new ProcessOperator(cpu,memory);
+       fileOperator=new FileOperator(disk,processOperator);
+       new Thread(cpu).start();
+       new Thread(clock).start();
     }
     /**
      * 初始化模拟磁盘
@@ -81,6 +96,12 @@ public class OS {
         } else {
             java.lang.System.out.println("模拟磁盘已存在，无需重新创建");
         }
+
+        try {
+            disk=new RandomAccessFile(OsConstant.DISK_FILE,"rw");
+        } catch (FileNotFoundException e) {
+            java.lang.System.err.println("未找到磁盘模拟文件");
+        }
     }
 
     /**
@@ -114,12 +135,7 @@ public class OS {
 //                }
 //            }
 //        }
-        try {
-            disk=new RandomAccessFile(OsConstant.DISK_FILE,"rw");
-            fileOperator=new FileOperator(disk);
-        } catch (FileNotFoundException e) {
-            java.lang.System.err.println("未找到磁盘模拟文件");
-        }
+
     }
 
     /**
