@@ -8,6 +8,9 @@ public class PCB {
     public static final int STATUS_RUN=1;//运行
     public static final int STATUS_BLOCK=2;//阻塞
     public static final int STATUS_HANG_OUT=3;//闲逛
+    public static final int EVENT_WAIT_DEVICE=0;//等待设备
+    public static final int EVENT_USING_DEVICE=1;//阻塞设备中
+    public static final int EVENT_NOTING=2;//无
     private static  int idGenerator =1;
     //进程唯一标识符
     private int PID;

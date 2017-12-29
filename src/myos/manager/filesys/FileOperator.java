@@ -1,8 +1,8 @@
 package myos.manager.filesys;
 
 import myos.constant.OsConstant;
-import myos.manager.process.ProcessOperator;
-import myos.pojo.SplitFilePath;
+import myos.controller.MainController;
+import myos.manager.process.ProcessCreator;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -15,27 +15,29 @@ import java.util.List;
  * Created by lindanpeng on 2017/12/6.
  */
 public class FileOperator {
-    //系统内存
-    //private byte[] memory;
-    //文件分配表起始位置
-//    private int fatStartPos=0;
-//    //文件分配表结束位置
-//    private int fatEndPos= OsConstant.DISK_BLOCK_QUNTITY -1;
+
     //已打开文件项
     List<OpenedFile> openedFiles;
-    //文件分配表
-    List<Byte> fat;
     //磁盘文件
     RandomAccessFile disk;
     //进程操作
-    ProcessOperator processOperator;
-    public FileOperator(RandomAccessFile disk,ProcessOperator processOperator) {
-        this.processOperator=processOperator;
-        this.fat = fat;
+    ProcessCreator processCreator;
+    //界面控制
+    private MainController mainController;
+    public FileOperator(RandomAccessFile disk,ProcessCreator processCreator,MainController mainController) throws Exception {
+        this.processCreator = processCreator;
         this.disk = disk;
         this.openedFiles = new ArrayList<>();
+        this.mainController=mainController;
+        mainController.updateFatView(getFat());
+        mainController.buildCatalogTree(readCatalog(2));
     }
-
+    public  byte[] getFat() throws IOException {
+        disk.seek(0);
+        byte[] buffer=new byte[OsConstant.DISK_BLOCK_QUNTITY];
+        disk.read(buffer,0,buffer.length);
+        return buffer;
+    }
     /**
      * 建立文件
      *
@@ -81,6 +83,7 @@ public class FileOperator {
      * @param opType   操作类型(读或写)
      */
     public OpenedFile open(String filePath, int opType) throws Exception {
+        OpenedFile openedFile;
         int catalogBlockPos=-1;
         try{
             catalogBlockPos= getCatalogBlock(filePath,2);
@@ -88,10 +91,9 @@ public class FileOperator {
         }catch (Exception e){
             throw  new Exception("没有找到文件！");
         }
-
         Catalog catalog=readCatalog(catalogBlockPos);
         catalog.setCatalogBlock(catalogBlockPos);
-        OpenedFile openedFile=new OpenedFile();
+         openedFile=new OpenedFile();
         openedFile.setOpType(opType);
         openedFile.setFilePath(filePath);
         openedFile.setCatalog(catalog);
@@ -104,12 +106,42 @@ public class FileOperator {
         openedFile.setReadPointer(readPointer);
         openedFile.setWritePointer(writePointer);
         openedFiles.add(openedFile);
-        //如果是可执行程序，则创建进程
-        if (catalog.getProperty()>>4==1)
-        processOperator.create(catalog.getBytes());
         return openedFile;
     }
 
+    /**
+     * 运行文件
+     * @param filePath
+     */
+    public void run(String filePath) throws Exception {
+        int catalogBlockPos=-1;
+        try{
+            catalogBlockPos= getCatalogBlock(filePath,2);
+            System.out.println("文件目录项所在磁盘块："+catalogBlockPos);
+        }catch (Exception e){
+            throw  new Exception("没有找到文件！");
+        }
+        Catalog catalog=readCatalog(catalogBlockPos);
+        //如果不是可执行程序，则抛出异常
+        if (catalog.getProperty()>>4==0)
+            throw new Exception("该文件不是可执行程序！");
+        catalog.setCatalogBlock(catalogBlockPos);
+        OpenedFile openedFile=new OpenedFile();
+        openedFile.setOpType(OpenedFile.OP_TYPE_RUN);
+        openedFile.setFilePath(filePath);
+        openedFile.setCatalog(catalog);
+        Pointer readPointer=new Pointer();
+        readPointer.setBlockNo(catalog.getStartBlock());
+        readPointer.setAddress(0);
+        Pointer writePointer=new Pointer();
+        writePointer.setBlockNo(catalog.getStartBlock());
+        writePointer.setAddress(0);
+        openedFile.setReadPointer(readPointer);
+        openedFile.setWritePointer(writePointer);
+        openedFiles.add(openedFile);
+        byte[] instructions=read(openedFile,-1);
+        processCreator.create(instructions);
+    }
     /**
      * 读取文件
      *
@@ -159,7 +191,6 @@ public class FileOperator {
 //            bytes[0]='#';
 //            append(openedFile,bytes,1);
 //        }
-
         openedFiles.remove(openedFile);
 
     }
@@ -211,8 +242,6 @@ public class FileOperator {
             }
             setNextBlock(pre,getNextBlock(blockPos));
         }
-
-
         //删除目录项
         setNextBlock(blockPos,0);
 
@@ -270,7 +299,7 @@ public class FileOperator {
     }
 
     /**
-     * 删除空目录
+     * TODO 删除目录
      *
      * @param dirPath 目录路径
      */
@@ -284,8 +313,8 @@ public class FileOperator {
      * @return
      */
     private byte[] read(OpenedFile openedFile,int length) throws Exception {
-        if (openedFile.getOpType()!=OpenedFile.OP_TYPE_READ)
-            throw new Exception("文件不处于读模式,不能读取");
+        if (openedFile.getOpType()!=OpenedFile.OP_TYPE_READ&&openedFile.getOpType()!=OpenedFile.OP_TYPE_RUN)
+            throw new Exception("文件不处于读或运行模式,不能读取");
         int readByte=0;
         //1.文件内容不够长
         //2.遇到结束符

@@ -1,4 +1,4 @@
-package cn.info.wuyu.javabackend.scheduletask.base;
+package myos.others;
 
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +39,14 @@ public class DelayItem<T> implements Delayed {
         else
             return -1;
 
+    }
+
+    public long getWorkTime() {
+        return workTime;
+    }
+
+    public void setWorkTime(long workTime) {
+        this.workTime = workTime;
     }
 
     public T getObj() {

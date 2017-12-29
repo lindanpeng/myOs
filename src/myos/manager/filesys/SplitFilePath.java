@@ -1,4 +1,4 @@
-package myos.pojo;
+package myos.manager.filesys;
 
 /**
  * Created by lindanpeng on 2017/12/19.

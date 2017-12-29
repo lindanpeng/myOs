@@ -1,5 +1,7 @@
 package myos.manager.filesys;
 
+import java.util.List;
+
 /**
  * Created by lindanpeng on 2017/12/6.
  *目录/文件登记项
@@ -23,13 +25,18 @@ public class Catalog {
     private boolean isDirectory;
     //目录所在磁盘块号
     private int catalogBlock;
-
+    //是否为空
+    private boolean isBlank;
     public Catalog(byte[] bytes){
         this.bytes=bytes;
         this.name=new String(bytes,0,3);
         this.type=new String(bytes,3,2);
         this.property=bytes[5];
         this.startBlock=bytes[6];
+        if (startBlock==-1){
+            isBlank=true;
+        }else
+            isBlank=false;
         this.fileLength=bytes[7];
         if (property>>3==1){
             isDirectory=true;
@@ -121,5 +128,14 @@ public class Catalog {
         this.catalogBlock = catalogBlock;
     }
 
+    public boolean isBlank() {
+        return isBlank;
+    }
 
+    public void setBlank(boolean blank) {
+        isBlank = blank;
+    }
+    public List<Catalog> list(){
+    return null;
+    }
 }

@@ -7,6 +7,7 @@ package myos.manager.filesys;
 public class OpenedFile {
     public static final int OP_TYPE_READ=0;//读方式打开文件
     public static final int OP_TYPE_WRITE=1;//写方式打开文件
+    public static final int OP_TYPE_RUN=2;//执行模式
     //文件路径名
     private String filePath;
     //文件目录项

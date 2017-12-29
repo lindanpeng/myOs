@@ -2,6 +2,7 @@ package myos.manager;
 
 
 
+import javax.sound.midi.SysexMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -9,32 +10,32 @@ import java.util.*;
  * Created by lindanpeng on 2017/10/15.
  */
 public class Demo {
-    public static void main(String[] args) throws UnsupportedEncodingException {
-//       byte[] bytes={'r','t',0};
-//       String str= new String(bytes);
-//       OS.out.println(str.equals("rt"));
-//       for (byte b:str.getBytes()){
-//           OS.out.println(b);
-//       }
-//        ArrayList<Byte> list=new ArrayList<>();
-//        list.add((byte)1);
-//        list.add((byte)2);
-//        Byte[] bytes=list.toArray(new Byte[list.size()]);
-//        for (byte b:bytes)
-//            System.out.println(b);
-        List<String> list=new LinkedList<>();
-        list.add("A");
-        list.add("B");
-        list.add("D");
-        ListIterator<String> it=list.listIterator();
-        while(it.hasNext()){
-            String str=it.next();
-            if (str.equals("A"))
-                break;
+    public static void main(String[] args) throws UnsupportedEncodingException, InterruptedException {
+        Thread thread=new Thread(new B());
+        thread.start();
+        for (int i=0;i<8;i++){
+            for (int j=0;j<16;j++){
+                System.out.println("<Pane prefHeight=\"200.0\" prefWidth=\"200.0\" GridPane.columnIndex=\""+j+"\" GridPane.rowIndex=\""+i+"\" />");
+            }
         }
-        it.add("C");
-        for (String s:list){
-            System.out.println(s);
-        }
+       // thread.start();
 }
+}
+class A{
+    protected  String name="hello";
+    public A(){
+        System.out.println(name);
+    }
+}
+class B extends A implements Runnable{
+    private String name;
+    public B(){
+        super();
+        System.out.println(name);
+    }
+
+    @Override
+    public void run() {
+        System.out.println("hello");
+    }
 }
