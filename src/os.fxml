@@ -18,13 +18,13 @@
             <Pane prefHeight="200.0" prefWidth="200.0">
                <children>
                   <Label layoutX="21.0" layoutY="16.0" text="系统时钟：" />
-                  <Text layoutX="81.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
+                  <Text  fx:id = "systemTimeTxt" layoutX="81.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
                </children>
             </Pane>
             <Pane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <Label layoutX="14.0" layoutY="16.0" text="时间片：" />
-                  <Text layoutX="62.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
+                  <Label  layoutX="14.0" layoutY="16.0" text="时间片：" />
+                  <Text fx:id = "timesliceTxt" layoutX="62.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
                </children>
             </Pane>
             <Pane prefHeight="47.0" prefWidth="75.0">
@@ -262,7 +262,7 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="150.0">
                      <children>
-                        <TextArea layoutX="19.0" layoutY="9.0" prefHeight="180.0" prefWidth="294.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TextArea fx:id="cmdView" layoutX="19.0" layoutY="9.0" prefHeight="180.0" prefWidth="294.0"  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" onKeyPressed ="#excuteCMD"/>
                      </children>
                   </AnchorPane>
               </content>

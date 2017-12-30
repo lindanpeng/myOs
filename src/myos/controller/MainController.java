@@ -4,10 +4,9 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
@@ -17,7 +16,6 @@ import myos.constant.UIResources;
 import myos.manager.filesys.Catalog;
 import myos.manager.process.Clock;
 import myos.ui.MyTreeItem;
-import sun.reflect.generics.tree.Tree;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -36,7 +34,8 @@ public class MainController implements Initializable {
     private Text systemTimeTxt;
     @FXML
     private Text timesliceTxt;
-
+    @FXML
+    private TextArea cmdView;
     private OS os;
     private boolean launched=false;
     public MainController() throws Exception {
@@ -58,6 +57,24 @@ public class MainController implements Initializable {
             startBtn.setText("启动系统");
         }
 
+    }
+    public void excuteCMD(KeyEvent event){
+            if(event.getCode() == KeyCode.ENTER)
+            {
+                String command  = cmdView.getText();
+                cmdView.clear();
+                String[] instruction = command.split(" ");
+                if(instruction.length>1) {
+                    System.out.println(instruction[0] + " "+instruction[1]);
+                    
+
+
+
+                }else
+                {
+                    return;
+                }
+            }
     }
     public void closeOS(){
         os.close();
