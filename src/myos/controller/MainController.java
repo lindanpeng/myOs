@@ -61,20 +61,19 @@ public class MainController implements Initializable {
         }
 
     }
-    public void excuteCMD(KeyEvent event){
+    public void excuteCMD(KeyEvent event) throws  Exception{
             if(event.getCode() == KeyCode.ENTER)
             {
                 String str  = cmdView.getText();
-                String command = str.replaceAll("\\s{1,}"," ");
+                String command = str.substring(0,str.length()-1).replaceAll("\\s{1,}"," ");//去除多余的空格和换行符
                 cmdView.clear();
                 String[] instruction = command.split(" ");
                 if(instruction.length>1) {
-                    System.out.println(instruction[0] + " "+instruction[1].substring(0,instruction[1].length()-1));
-                    String path = instruction[1].substring(0,instruction[1].length()-1);
+                    System.out.println(instruction[0] + " "+instruction[1]);
                     if(instruction[0].contains("create")) {
-                        
+                        os.fileOperator.create(instruction[1],4);
                     }else if(instruction[0].contains("delete")){
-
+                        os.fileOperator.delete(instruction[1]);
                     }else if(instruction[0].contains("type")){
 
                     }else if(instruction[0].contains("copy")&&instruction.length==3){
@@ -83,6 +82,9 @@ public class MainController implements Initializable {
 
                     }else if(instruction[0].contains("rmdir")){
 
+                    }else if(instruction[0].contains("change")&&instruction.length==3){
+                        int newProperty = Integer.valueOf(instruction[2]).intValue();
+                        os.fileOperator.changeProperty(instruction[1],newProperty);
                     }else {
                         return;
                     }
