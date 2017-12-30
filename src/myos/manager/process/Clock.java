@@ -1,6 +1,7 @@
 package myos.manager.process;
 
 
+import myos.OS;
 
 /**
  * 系统时钟
@@ -8,7 +9,7 @@ package myos.manager.process;
 public class Clock implements Runnable {
 
     //时间片长度
-    private static final long TIMESLICE_LENGTH=6000;
+    private static final long TIMESLICE_LENGTH=6;
     //时间片单位(毫秒)
     public static final long TIMESLICE_UNIT=1000;
     //系统时钟
@@ -16,8 +17,8 @@ public class Clock implements Runnable {
     //当前进程剩下的运行时间
     private long restTime;
     private CPU cpu;
-    public Clock(CPU cpu ){
-        this.cpu=cpu;
+    public Clock(){
+        this.cpu= OS.cpu;
         init();
     }
 
@@ -36,8 +37,8 @@ public class Clock implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            systemTime+=TIMESLICE_UNIT;
-            restTime=(restTime+TIMESLICE_LENGTH-TIMESLICE_UNIT)%TIMESLICE_LENGTH;
+            systemTime+=TIMESLICE_UNIT/1000;
+            restTime=(restTime+TIMESLICE_LENGTH-TIMESLICE_UNIT/1000)%TIMESLICE_LENGTH;
             //时间片到了
             if (restTime==0){
                 System.out.println("时间片用完了");

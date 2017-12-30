@@ -1,5 +1,6 @@
 package myos.controller;
 
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -9,10 +10,12 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 import javafx.util.Callback;
 import myos.OS;
 import myos.constant.UIResources;
 import myos.manager.filesys.Catalog;
+import myos.manager.process.Clock;
 import myos.ui.MyTreeItem;
 import sun.reflect.generics.tree.Tree;
 
@@ -29,20 +32,26 @@ public class MainController implements Initializable {
     private Button startBtn;
     @FXML
     private TreeView<Catalog> catalogTreeView;
-    private OS os;
-    private boolean launched;
-    public MainController(){
+    @FXML
+    private Text systemTimeTxt;
+    @FXML
+    private Text timesliceTxt;
 
+    private OS os;
+    private boolean launched=false;
+    public MainController() throws Exception {
+        os = new OS(this);
     }
     /*-------------------用户请求------------------------*/
     /**
      * 启动系统
      */
     public void launchOS() throws Exception {
-        if (os==null) {
-            os = new OS(this);
+        if (!launched) {
+            os.start();
             launched=true;
             startBtn.setText("关闭系统");
+            new UpdateUIThread().start();
         }else{
             closeOS();
             launched=false;
@@ -57,19 +66,13 @@ public class MainController implements Initializable {
     /**
      * 构建目录树
      */
-    public void buildCatalogTree(Catalog root) throws Exception {
+    public void initCatalogTree(Catalog root) throws Exception {
         TreeItem<Catalog> treeItem=new MyTreeItem(root);
         catalogTreeView.setRoot(treeItem);
-        catalogTreeView.addEventHandler(TreeItem.branchExpandedEvent(), new EventHandler<TreeItem.TreeModificationEvent<Object>>() {
-            @Override
-            public void handle(TreeItem.TreeModificationEvent<Object> event) {
-                System.out.println(event.getSource());
-            }
-        });
         catalogTreeView.setCellFactory(new Callback<TreeView<Catalog>, TreeCell<Catalog>>() {
-            @Override
             public TreeCell<Catalog> call(TreeView<Catalog> param) {
                 return new TreeCell<Catalog>(){
+
                     @Override
                     protected void updateItem(Catalog catalog,boolean empty){
                         super.updateItem(catalog,empty);
@@ -79,11 +82,10 @@ public class MainController implements Initializable {
                         } else {
                             setText(catalog.getName());
                             if (catalog.isDirectory()){
-                                setGraphic(UIResources.directoryIcon);
-
+                                setGraphic(UIResources.getDirectoryIcon());
                             }
                             else {
-                                setGraphic(UIResources.fileIcon);
+                                setGraphic(UIResources.getFileIcon());
                             }
                         }
                     }
@@ -150,5 +152,19 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+    }
+    private class UpdateUIThread extends Thread{
+        @Override
+        public void run(){
+            while(!isInterrupted()){
+                try {
+                MainController.this.systemTimeTxt.setText(OS.clock.getSystemTime()+"");
+                MainController.this.timesliceTxt.setText(OS.clock.getRestTime()+"");
+                    Thread.sleep(Clock.TIMESLICE_UNIT);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package myos.manager.process;
 
+import myos.OS;
 import myos.constant.OsConstant;
 import myos.manager.filesys.FileOperator;
 import myos.manager.memory.Memory;
@@ -17,9 +18,9 @@ import java.util.Queue;
 public class ProcessCreator {
     private Memory memory;
     private CPU cpu;
-    public ProcessCreator(CPU cpu, Memory memory ){
-        this.memory=memory;
-        this.cpu=cpu;
+    public ProcessCreator( ){
+        this.memory= OS.memory;
+        this.cpu=OS.cpu;
     }
     /**
      * 为打开的可执行文件创建进程

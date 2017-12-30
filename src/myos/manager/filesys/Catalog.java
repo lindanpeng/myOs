@@ -1,5 +1,9 @@
 package myos.manager.filesys;
 
+import myos.OS;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -135,7 +139,15 @@ public class Catalog {
     public void setBlank(boolean blank) {
         isBlank = blank;
     }
-    public List<Catalog> list(){
-    return null;
+    public List<Catalog> list() throws IOException {
+        List<Catalog> catalogs=new ArrayList<>();
+        Catalog catalog= OS.fileOperator.readCatalog(catalogBlock);
+        int nextBlock=catalog.getStartBlock();
+        while(nextBlock!=-1){
+            Catalog c=OS.fileOperator.readCatalog(nextBlock);
+            catalogs.add(c);
+            nextBlock=OS.fileOperator.getNextBlock(nextBlock);
+        }
+        return  catalogs;
     }
 }

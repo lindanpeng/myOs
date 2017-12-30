@@ -1,5 +1,6 @@
 package myos.manager.process;
 
+import myos.OS;
 import myos.manager.device.DeviceManager;
 import myos.manager.memory.Memory;
 import myos.manager.memory.PCB;
@@ -24,8 +25,8 @@ public class CPU implements Runnable {
     private int PC;
     private Memory memory;
     private DeviceManager deviceManager;
-    public CPU(Memory memory) {
-        this.memory = memory;
+    public CPU() {
+        this.memory = OS.memory;
         deviceManager=new DeviceManager(this);
         init();
     }

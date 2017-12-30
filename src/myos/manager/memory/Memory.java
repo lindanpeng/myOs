@@ -2,6 +2,7 @@ package myos.manager.memory;
 
 import myos.constant.OsConstant;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -13,6 +14,8 @@ import java.util.Queue;
 public class Memory {
     //内存分配表
     private List<SubArea> subAreas;
+    //所有进程
+    private List<PCB> allPCB;
     //空闲进程控制块
     private Queue<PCB> freePCB;
     //就绪进程控制块
@@ -42,6 +45,10 @@ public class Memory {
         hangOutPCB=new PCB();
         hangOutPCB.setStatus(PCB.STATUS_HANG_OUT);
         runningPCB=hangOutPCB;
+        allPCB=new ArrayList<>(11);
+        allPCB.addAll(freePCB);
+        allPCB.add(hangOutPCB);
+
         userArea = new byte[OsConstant.USER_AREA_SIZE];
     }
 
@@ -95,5 +102,13 @@ public class Memory {
 
     public PCB getHangOutPCB() {
         return hangOutPCB;
+    }
+
+    public List<PCB> getAllPCB() {
+        return allPCB;
+    }
+
+    public void setAllPCB(List<PCB> allPCB) {
+        this.allPCB = allPCB;
     }
 }

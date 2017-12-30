@@ -16,33 +16,36 @@ import static myos.constant.OsConstant.DISK_BLOCK_SIZE;
 
 public class OS  {
     public static RandomAccessFile disk; //模拟磁盘
-    private static FileOperator fileOperator;//文件操作管理
-    private static ProcessCreator processCreator;//进程创建器
-    private static CPU cpu;//CPU
-    private static Memory memory;//内存
-    private static Clock clock;//时钟
-    private MainController mainController;//界面控制类
+    public static FileOperator fileOperator;//文件操作管理
+    public static ProcessCreator processCreator;//进程创建器
+    public static CPU cpu;//CPU
+    public static Memory memory;//内存
+    public static Clock clock;//时钟
+    public static MainController mainController;//界面控制类
     public OS(MainController mainController) throws Exception {
         this.mainController=mainController;
-        init();
+        loadDisk();
+        memory=new Memory();
+        cpu=new CPU();
+        clock=new Clock();
+        processCreator =new ProcessCreator();
+        fileOperator=new FileOperator();
     }
 
     /**
      * 初始化系统
      */
     public void init() throws Exception {
-       initDisk();
-       memory=new Memory();
-       cpu=new CPU(memory);
-       clock=new Clock(cpu);
-       processCreator =new ProcessCreator(cpu,memory);
-       fileOperator=new FileOperator(disk, processCreator,mainController);
+
+       cpu.init();
+       clock.init();
+       fileOperator.init();
     }
 
     /**
      * 初始化模拟磁盘
      */
-    void initDisk(){
+    void loadDisk(){
         File file = new File(OsConstant.DISK_FILE);
         FileOutputStream fout=null;
         //判断模拟磁盘是否已经创建
@@ -152,14 +155,9 @@ public class OS  {
 //        }
         //byte[] bytes=fileOperator.read("rt/a",3);
         //fileOperator.close("rt/a");
-        //fileOperator.delete("rt/a");
+        fileOperator.delete("rt/e");
         //fileOperator.open("rt/a",0);
        // fileOperator.read("rt/a",3);
     }
 
-    public static void main(String[] args) throws Exception {
-//        OS OS =new OS();
-//        OS.test();
-//        OS.close();
-    }
 }
