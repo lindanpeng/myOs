@@ -16,7 +16,7 @@ public class MyTreeItem extends TreeItem<Catalog>{
     }
     @Override
     public boolean isLeaf(){
-        return !getValue().isDirectory()||getValue().isBlank();
+        return !getValue().isDirectory();
     }
     @Override
     public ObservableList<TreeItem<Catalog>> getChildren(){

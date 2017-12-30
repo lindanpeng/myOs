@@ -1,5 +1,6 @@
 package myos.manager.filesys;
 
+import javafx.scene.Parent;
 import myos.OS;
 import myos.constant.OsConstant;
 import myos.controller.MainController;
@@ -34,8 +35,7 @@ public class FileOperator {
 
     }
     public void init() throws Exception {
-        mainController.updateFatView(getFat());
-        mainController.initCatalogTree(readCatalog(2));
+
     }
     public byte[] getFat() throws IOException {
         disk.seek(0);
@@ -64,8 +64,7 @@ public class FileOperator {
         //将该文件夹的起始磁盘块设置为新文件的磁盘块
         if (parentDir.getStartBlock() == -1) {
             parentDir.setStartBlock(newFilePos);
-            disk.seek(parentCatalogBlockPos * OsConstant.DISK_BLOCK_SIZE);
-            disk.write(parentDir.getBytes(), 0, parentDir.getBytes().length);
+           writeCatalog(parentDir);
         }
         //将该文件夹的最后一个文件的磁盘块设置为新文件的磁盘块位置
         else {
@@ -74,12 +73,11 @@ public class FileOperator {
             disk.writeByte(newFilePos);
         }
         Catalog newFile = new Catalog(splitFilePath.getFileName(), property);
-        disk.seek(newFilePos);
-        disk.writeByte(-1);//修改文件分配表
-        disk.seek(newFilePos * OsConstant.DISK_BLOCK_SIZE);
-        disk.write(newFile.getBytes(), 0, newFile.getBytes().length);//将目录项写入磁盘
+        newFile.setCatalogBlock(newFilePos);
+        setNextBlock(newFilePos,-1);//修改文件分配表
+        writeCatalog(newFile);//将目录项写入磁盘
         System.out.println("建立文件成功");
-
+        mainController.addTreeItem(parentDir,newFile);
     }
 
     /**
@@ -255,8 +253,32 @@ public class FileOperator {
         setNextBlock(blockPos, 0);
 
         System.out.println("删除文件成功");
+        mainController.removeTreeItem(catalog);
     }
+    public void delete(Catalog parent,Catalog c) throws Exception {
+        for(OpenedFile openedFile:openedFiles){
+            if (openedFile.getCatalog().equals(c)){
+                throw  new Exception("该文件已经打开，无法删除！");
+            }
+        }
+        if (parent.getStartBlock() == c.getCatalogBlock()) {
+            parent.setStartBlock(getNextBlock(c.getCatalogBlock()));
+            writeCatalog(parent);
+        } else {
+          int  nextBlock = parent.getStartBlock();
+          int  pre = nextBlock;
+            while (nextBlock != c.getCatalogBlock()) {
+                pre = nextBlock;
+                nextBlock = getNextBlock(pre);
+            }
+            setNextBlock(pre, getNextBlock(c.getCatalogBlock()));
+        }
+        //删除目录项
+        setNextBlock(c.getCatalogBlock(), 0);
+        System.out.println("删除文件"+c.getName()+"成功");
 
+
+    }
     /**
      * 显示文件
      *
@@ -278,6 +300,8 @@ public class FileOperator {
         Catalog catalog = readCatalog(catalogBlock);
         catalog.setProperty(newProperty);
         writeCatalog(catalog);
+        System.out.println("修改文件属性成功");
+        mainController.updateTreeItem(catalog);
     }
 
     /**
@@ -285,7 +309,7 @@ public class FileOperator {
      *
      * @param dirPath 目录路径
      */
-    public void md(String dirPath) throws Exception {
+    public void mkdir(String dirPath) throws Exception {
         create(dirPath, 8);
     }
 
@@ -312,10 +336,35 @@ public class FileOperator {
      *
      * @param dirPath 目录路径
      */
-    public void rd(String dirPath) {
-
+    public void rmdir(String dirPath) throws Exception {
+        SplitFilePath splitFilePath=splitPathAndFileName(dirPath);
+        int parentBlock=getCatalogBlock(splitFilePath.getPath(),2);
+        Catalog parent=readCatalog(parentBlock);
+        int catalogBlock = getCatalogBlock(dirPath, 2);
+        Catalog catalog = readCatalog(catalogBlock);
+        rmdir(parent,catalog);
+        mainController.removeTreeItem(catalog);
     }
 
+    /**
+     *删除目录内部实现
+     * @param parent 要删除目录的父目录
+     * @param catalog 要删除的目录
+     */
+    private void rmdir(Catalog parent,Catalog catalog) throws Exception {
+        //如果是文件或空文件夹，则直接删除
+        if (!catalog.isDirectory()||catalog.isBlank()){
+            delete(parent,catalog);
+            return;
+        }
+        //先删除所有子目录
+        for (Catalog c:catalog.list()){
+            rmdir(catalog,c);
+        }
+        catalog.setBlank(true);
+        //再删除本目录
+        rmdir(parent,catalog);
+    }
     /**
      * 读取已打开文件
      *
@@ -509,6 +558,8 @@ public class FileOperator {
     private void setNextBlock(int i, int nextBlock) throws IOException {
         disk.seek(i);
         disk.writeByte(nextBlock);
+        //更新分区表视图
+        mainController.updateFatView();
     }
 
     /**
@@ -556,6 +607,8 @@ public class FileOperator {
     private void writeCatalog(Catalog catalog) throws IOException {
         disk.seek(catalog.getCatalogBlock() * OsConstant.DISK_BLOCK_SIZE);
         disk.write(catalog.getBytes(), 0, catalog.getBytes().length);
+//        //更新目录树
+        mainController.updateTreeItem(catalog);
     }
 
     /**
@@ -598,4 +651,5 @@ public class FileOperator {
         }
         return false;
     }
+
 }

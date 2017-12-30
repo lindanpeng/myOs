@@ -24,29 +24,38 @@ public class Catalog {
     //文件长度，单位为盘块，如果是目录则为0
     private int fileLength;
     /*方便操作的附加属性*/
-
+    //是否是可执行文件
+    public boolean executable;
     //是否是目录
     private boolean isDirectory;
     //目录所在磁盘块号
     private int catalogBlock;
     //是否为空
     private boolean isBlank;
+
+    public void setBlank(boolean blank) {
+        isBlank = blank;
+    }
+
     public Catalog(byte[] bytes){
         this.bytes=bytes;
         this.name=new String(bytes,0,3);
         this.type=new String(bytes,3,2);
-        this.property=bytes[5];
+        setProperty(bytes[5]);
         this.startBlock=bytes[6];
+        if (property>>4==1){
+            executable=true;
+        }
+        else if (property>>3==1){
+            isDirectory=true;
+        }
         if (startBlock==-1){
             isBlank=true;
         }else
             isBlank=false;
+
         this.fileLength=bytes[7];
-        if (property>>3==1){
-            isDirectory=true;
-        }
-        else
-            isDirectory=false;
+
     }
     public Catalog(String fileName,int property) throws Exception {
         this.bytes=new byte[8];
@@ -55,7 +64,13 @@ public class Catalog {
         this.setFileLength(0);
         this.setName(fileName);
         this.setProperty(property);
+        if (property==8){
+            isDirectory=true;
+        }
+        else
+            isDirectory=false;
         this.setType("  ");
+        this.isBlank=true;
     }
 
     public String getName() {
@@ -92,6 +107,7 @@ public class Catalog {
     public void setProperty(int property) {
         this.property = property;
         bytes[5]=(byte)property;
+
     }
 
     public int getStartBlock() {
@@ -136,9 +152,7 @@ public class Catalog {
         return isBlank;
     }
 
-    public void setBlank(boolean blank) {
-        isBlank = blank;
-    }
+
     public List<Catalog> list() throws IOException {
         List<Catalog> catalogs=new ArrayList<>();
         Catalog catalog= OS.fileOperator.readCatalog(catalogBlock);
@@ -150,4 +164,28 @@ public class Catalog {
         }
         return  catalogs;
     }
+
+    public boolean isExecutable() {
+        return executable;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Catalog catalog = (Catalog) o;
+
+        if (catalogBlock != catalog.catalogBlock) return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + startBlock;
+        return result;
+    }
+
 }

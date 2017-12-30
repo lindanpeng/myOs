@@ -2,10 +2,7 @@ package myos.manager.memory;
 
 import myos.constant.OsConstant;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Created by lindanpeng on 2017/12/12.
@@ -16,8 +13,8 @@ public class Memory {
     private List<SubArea> subAreas;
     //所有进程
     private List<PCB> allPCB;
-    //空闲进程控制块
-    private Queue<PCB> freePCB;
+/*    //空闲进程控制块
+    private Queue<PCB> freePCB;*/
     //就绪进程控制块
     private Queue<PCB> waitPCB;
     //阻塞进程控制块
@@ -35,20 +32,12 @@ public class Memory {
         subArea.setStartAdd(0);
         subArea.setStatus(SubArea.STATUS_FREE);
         subAreas.add(subArea);
-        freePCB = new LinkedList<>();
-        for (int i=0;i<OsConstant.PCB_COUNT;i++){
-            PCB PCB=new PCB();
-            freePCB.add(PCB);
-        }
-        waitPCB = new LinkedList<>();
+       // freePCB = new LinkedList<>();
+        waitPCB =  new LinkedList<>();
         blockPCB = new LinkedList<>();
         hangOutPCB=new PCB();
-        hangOutPCB.setStatus(PCB.STATUS_HANG_OUT);
+        hangOutPCB.setStatus(PCB.STATUS_RUN);
         runningPCB=hangOutPCB;
-        allPCB=new ArrayList<>(11);
-        allPCB.addAll(freePCB);
-        allPCB.add(hangOutPCB);
-
         userArea = new byte[OsConstant.USER_AREA_SIZE];
     }
 
@@ -60,13 +49,6 @@ public class Memory {
         this.subAreas = subAreas;
     }
 
-    public Queue<PCB> getFreePCB() {
-        return freePCB;
-    }
-
-    public void setFreePCB(Queue<PCB> freePCB) {
-        this.freePCB = freePCB;
-    }
 
     public Queue<PCB> getWaitPCB() {
         return waitPCB;
@@ -105,10 +87,15 @@ public class Memory {
     }
 
     public List<PCB> getAllPCB() {
+        List<PCB> allPCB=new ArrayList<>(10);
+        allPCB.add(runningPCB);
+        allPCB.addAll(blockPCB);
+        allPCB.addAll(waitPCB);
         return allPCB;
     }
 
     public void setAllPCB(List<PCB> allPCB) {
         this.allPCB = allPCB;
     }
+
 }

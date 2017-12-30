@@ -31,8 +31,8 @@ public class ProcessCreator {
             System.out.println("指令"+i+"是"+program[i]);
         }
         /*申请空白进程块*/
-        Queue<PCB> freePCBs=memory.getFreePCB();
-        if (freePCBs.size()==0)
+        int pcbSize=memory.getAllPCB().size();
+        if (pcbSize>=OsConstant.PROCESS_MAX)
             throw  new Exception("当前运行的进程过多，请关闭其他程序后再试");
         /*申请内存*/
         SubArea subArea=null;
@@ -47,12 +47,12 @@ public class ProcessCreator {
         }
         if (subArea==null)
             throw new Exception("内存不足");
-        PCB freePCB=freePCBs.poll();
+        PCB newPCB=new PCB();
         //将可用区域划分出来
        if (subArea.getSize()>program.length){
            int newSubAreaSize=subArea.getSize()-program.length;
            subArea.setSize(program.length);
-           subArea.setTaskNo(freePCB.getPID());
+           subArea.setTaskNo(newPCB.getPID());
            subArea.setStatus(SubArea.STATUS_BUSY);
            SubArea newSubArea=new SubArea();
            newSubArea.setStatus(SubArea.STATUS_FREE);
@@ -66,15 +66,16 @@ public class ProcessCreator {
        for (int i=subArea.getStartAdd(),j=0;i<subArea.getStartAdd()+subArea.getSize();i++,j++){
            userArea[i]=program[j];
        }
-       System.out.println("创建的进程ID"+freePCB.getPID());
+       System.out.println("创建的进程ID"+newPCB.getPID());
         //初始化进程控制块
-        freePCB.setMemStart(subArea.getStartAdd());
-        freePCB.setMemEnd(program.length);
-        freePCB.setCounter(subArea.getStartAdd());
-        freePCB.setStatus(PCB.STATUS_WAIT);
-        memory.getWaitPCB().offer(freePCB);//进程就绪
+        newPCB.setMemStart(subArea.getStartAdd());
+        newPCB.setMemEnd(program.length);
+        newPCB.setCounter(subArea.getStartAdd());
+        newPCB.setStatus(PCB.STATUS_WAIT);
+        memory.getWaitPCB().offer(newPCB);//进程就绪
         //判断当前是否有实际运行进程，没有的则申请进程调度
-        if (memory.getRunningPCB()==null||memory.getRunningPCB().getStatus()==PCB.STATUS_HANG_OUT) {
+        if (memory.getRunningPCB()==null||memory.getRunningPCB()==memory.getHangOutPCB()) {
+            System.out.println("申请进程调度");
             cpu.dispatch();
         }
 

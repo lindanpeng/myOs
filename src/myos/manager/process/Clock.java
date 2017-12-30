@@ -42,6 +42,7 @@ public class Clock implements Runnable {
             //时间片到了
             if (restTime==0){
                 System.out.println("时间片用完了");
+                cpu.toReady();
                 cpu.dispatch();
             }
 

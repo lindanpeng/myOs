@@ -21,4 +21,7 @@ public class UIResources {
     public static Node getFileIcon(){
       return   new ImageView(new Image(UIResources.class.getResourceAsStream("/ui/file.png")));
     }
+    public static Node getProgramIcon(){
+        return new ImageView(new Image(UIResources.class.getResourceAsStream("/ui/program.png")));
+    }
 }

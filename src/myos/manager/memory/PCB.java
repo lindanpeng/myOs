@@ -4,10 +4,10 @@ package myos.manager.memory;
  * Created by lindanpeng on 2017/12/24.
  */
 public class PCB {
-    public static final int STATUS_WAIT=0;//就绪
-    public static final int STATUS_RUN=1;//运行
-    public static final int STATUS_BLOCK=2;//阻塞
-    public static final int STATUS_HANG_OUT=3;//闲逛
+    public static final String STATUS_WAIT="就绪";//就绪
+    public static final String STATUS_RUN="运行";//运行
+    public static final String STATUS_BLOCK="阻塞";//阻塞
+    public static final String STATUS_HANG_OUT="闲逛";//闲逛
     public static final int EVENT_WAIT_DEVICE=0;//等待设备
     public static final int EVENT_USING_DEVICE=1;//阻塞设备中
     public static final int EVENT_NOTING=2;//无
@@ -15,7 +15,7 @@ public class PCB {
     //进程唯一标识符
     private int PID;
     //状态
-    private int status;
+    private String status;
     //优先级
     private int priority;
     //程序计数器，相对于memStart
@@ -34,6 +34,7 @@ public class PCB {
     public PCB(){
         idGenerator++;
         PID=idGenerator;
+        priority= (int) (Math.random()*10);
     }
 
     public int getPID() {
@@ -44,11 +45,11 @@ public class PCB {
         this.PID = PID;
     }
 
-    public int getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

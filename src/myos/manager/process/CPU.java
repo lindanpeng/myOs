@@ -49,14 +49,14 @@ public class CPU implements Runnable {
         byte[] userArea = memory.getUserArea();
         IR = userArea[PC];
         PC++;
-        System.out.println("取指完成，开始运行指令"+IR);
+      //  System.out.println("取指完成，开始运行指令"+IR);
     }
 
     /**
      * 译码
      */
     public void identifyInstruction() {
-        System.out.println("译码完成");
+        //System.out.println("译码完成");
 
 
     }
@@ -66,25 +66,22 @@ public class CPU implements Runnable {
      */
     public void execute() {
         //TODO 如果是end指令就进程调度
-        System.out.println("指令"+IR+"运行完毕");
+     //   System.out.println("指令"+IR+"运行完毕");
 
     }
     /**
-     * 进程调度
+     * 进程调度,将进程从就绪态恢复到运行态
      */
     public void dispatch() {
         lock.lock();
         try {
-        PCB pcb1= memory.getRunningPCB();;//当前运行的进程
+        PCB pcb1= memory.getRunningPCB();//当前运行的进程
         PCB pcb2=memory.getWaitPCB().poll();//要运行的进程
-
-            if (pcb1!=memory.getHangOutPCB()){
-                memory.getWaitPCB().offer(pcb1);
-            }
             if (pcb2==null){
                 pcb2=memory.getHangOutPCB();
             }
-        memory.setRunningPCB(pcb2);
+             memory.setRunningPCB(pcb2);
+            pcb2.setStatus(PCB.STATUS_RUN);
             //保存现场
             if (pcb1 != memory.getHangOutPCB()) {
               saveContext(pcb1);
@@ -98,9 +95,8 @@ public class CPU implements Runnable {
         } finally {
             CPU.lock.unlock();
         }
-       // System.out.println("进程调度完成");
+        System.out.println("进程调度完成");
     }
-
 
     /**
      * 进程撤销
@@ -146,11 +142,20 @@ public class CPU implements Runnable {
     }
 
     /**
-     * 进程阻塞
+     * 将运行进程转换为就绪态
      */
-    public void block(PCB pcb){
-        //保存运行进程的CPU现场
-        saveContext(pcb);
+    public void toReady(){
+        PCB pcb=memory.getRunningPCB();
+        if (pcb!=memory.getHangOutPCB()){
+            memory.getWaitPCB().offer(pcb);
+        }
+        pcb.setStatus(PCB.STATUS_WAIT);
+    }
+    /**
+     * 将运行进程转换为阻塞态
+     */
+    public void block(){
+        PCB pcb=memory.getRunningPCB();
         //修改进程状态
         pcb.setStatus(PCB.STATUS_BLOCK);
         //将进程链入对应的阻塞队列，然后转向进程调度
