@@ -94,7 +94,7 @@ public class MainController implements Initializable {
             startBtn.setText("关闭系统");
             ThreadPoolUtil.execute(updateUIThread);
             initComponent();
-           new Thread(()-> {
+      /*     new Thread(()-> {
                    try {
 
                     //  os.fileOperator.create("rt/abc",8);
@@ -103,7 +103,6 @@ public class MainController implements Initializable {
                    //    os.fileOperator.create("rt/e",8);
                     //   os.fileOperator.create("rt/e/k",4);
                        Thread.sleep(5000);
-                      os.fileOperator.rmdir("rt/e");
 
                    } catch (InterruptedException e) {
                        e.printStackTrace();
@@ -112,7 +111,7 @@ public class MainController implements Initializable {
                    }
 
 
-           }).start();
+           }).start();*/
         }else{
             closeOS();
             launched=false;
@@ -121,13 +120,12 @@ public class MainController implements Initializable {
         }
 
     }
-    public void excuteCMD(KeyEvent event) throws  Exception{
+    public void executeCMD(KeyEvent event) throws  Exception{
             if(event.getCode() == KeyCode.ENTER)
             {
                 String str  = cmdView.getText();
-                String command = str.substring(0,str.length()-1).replaceAll("\\s{1,}"," ");//去除多余的空格和换行符
                 cmdView.clear();
-                String[] instruction = command.split(" ");
+                String[] instruction = str.trim().split("\\s+");
                 if(instruction.length>1) {
                     System.out.println(instruction[0] + " "+instruction[1]);
                     if(instruction[0].contains("create")) {
@@ -139,9 +137,9 @@ public class MainController implements Initializable {
                     }else if(instruction[0].contains("copy")&&instruction.length==3){
 
                     }else if(instruction[0].contains("mkdir")){
-
+                        os.fileOperator.mkdir(instruction[1]);
                     }else if(instruction[0].contains("rmdir")){
-
+                        os.fileOperator.rmdir(instruction[1]);
                     }else if(instruction[0].contains("change")&&instruction.length==3){
                         int newProperty = Integer.valueOf(instruction[2]).intValue();
                         os.fileOperator.changeProperty(instruction[1],newProperty);
