@@ -19,6 +19,7 @@ import myos.Main;
 import myos.OS;
 import myos.constant.UIResources;
 import myos.manager.filesys.Catalog;
+import myos.manager.filesys.OpenedFile;
 import myos.manager.memory.PCB;
 import myos.manager.memory.SubArea;
 import myos.manager.process.Clock;
@@ -100,24 +101,22 @@ public class MainController implements Initializable {
             initComponent();
             ThreadPoolUtil.execute(updateUIThread);
 
-           new Thread(()-> {
-                   try {
-                     //  os.fileOperator.create("rt/g",16);
-                    //   os.fileOperator.open("rt/g",OpenedFile.OP_TYPE_WRITE);
-                   //    os.fileOperator.append("rt/g","1234567897891387137813791231273137192371731sfasdfsfasdfasdfasdfasdfsdfsdfsfasfsdfasdfasdfsdfsdfasdfsf3".getBytes(),"1234567897891387137813791231273137192371731sfasdfsfasdfasdfasdfasdfsdfsdfsfasfsdfasdfasdfsdfsdfasdfsf3".length());
-                   //    os.fileOperator.close("rt/g");
-                       Thread.sleep(5000);
-                        os.fileOperator.run("rt/t");
-                       Thread.sleep(5000);
-                       os.fileOperator.run("rt/g");
-                   } catch (InterruptedException e) {
-                       e.printStackTrace();
-                   } catch (Exception e) {
-                       e.printStackTrace();
-                   }
-
-
-           }).start();
+//           new Thread(()-> {
+//                   try {
+//                    //   os.fileOperator.create("rt/g",16);
+//                       os.fileOperator.open("rt/pp", OpenedFile.OP_TYPE_WRITE);
+//                       os.fileOperator.append("rt/pp","12345".getBytes(),"12345".length());
+//                      os.fileOperator.close("rt/pp");
+//
+//                   //    os.fileOperator.run("rt/g");
+//                   } catch (InterruptedException e) {
+//                       e.printStackTrace();
+//                   } catch (Exception e) {
+//                       e.printStackTrace();
+//                   }
+//
+//
+//           }).start();
         } else {
             closeOS();
             launched = false;
@@ -144,7 +143,7 @@ public class MainController implements Initializable {
                             os.fileOperator.delete(instruction[1]);
                             cmdView.appendText("-> 删除文件成功\n");
                         }else if(instruction[0].contains("type")){
-                            String content = os.fileOperator.type(instruction[0]);
+                            String content = os.fileOperator.type(instruction[1]);
                             cmdView.appendText(content+"\n");
                         }else if(instruction[0].contains("copy")&&instruction.length==3){
 
