@@ -103,19 +103,18 @@ public class MainController implements Initializable {
 
 //           new Thread(()-> {
 //                   try {
-//                    //   os.fileOperator.create("rt/g",16);
-//                       os.fileOperator.open("rt/pp", OpenedFile.OP_TYPE_WRITE);
-//                       os.fileOperator.append("rt/pp","12345".getBytes(),"12345".length());
-//                      os.fileOperator.close("rt/pp");
+                      os.fileOperator.create("rt/bbb",16);
+                     os.fileOperator.open("rt/bbb", OpenedFile.OP_TYPE_WRITE);
+                        byte[] b=getInstruction();
+                      os.fileOperator.append("rt/bbb",b,b.length);
+                      os.fileOperator.close("rt/bbb");
 //
-//                   //    os.fileOperator.run("rt/g");
+                    os.fileOperator.run("rt/bbb");
 //                   } catch (InterruptedException e) {
 //                       e.printStackTrace();
 //                   } catch (Exception e) {
 //                       e.printStackTrace();
 //                   }
-//
-//
 //           }).start();
         } else {
             closeOS();
@@ -123,9 +122,51 @@ public class MainController implements Initializable {
             startBtn.setText("启动系统");
             ThreadPoolUtil.shutdown();
         }
-
     }
-
+    public byte[] getInstruction()
+    {
+        String[] instruction ={"mov ax,50","inc ax","mov bx,111","dec bx","! a 1","end"};
+        ArrayList<Byte> ins=new ArrayList<>();
+        for(int i=0;i<instruction.length;i++)
+        {
+            String[] str=instruction[i].split("[\\s|,]");
+            byte first;
+            byte second =(byte)0;
+            if(str.length>1) {
+                if (str[1].contains("a"))
+                    second = 0;
+                else if (str[1].contains("b")) {
+                    second = 4;
+                } else if (str[1].contains("b")) {
+                    second = 8;
+                } else {
+                    second = 12;
+                }
+            }
+            if(str[0].contains("mov")) {
+                first = (byte)80;
+                ins.add((byte)(first+second));
+                ins.add(Byte.valueOf(str[2]));
+            }else if(str[0].contains("inc")){
+                first = (byte)16;
+                ins.add((byte)(first+second));
+            }else if(str[0].contains("dec")){
+                first = (byte)32;
+                ins.add((byte)(first+second));
+            }else if(str[0].contains("!")){
+                first = (byte)48;
+                ins.add((byte)(first+second+Byte.valueOf(str[2])));
+            }else if(str[0].contains("end")){
+                ins.add((byte)64);
+            }
+        }
+        byte[] instruct= new byte[ins.size()];
+        for(int i=0;i<instruct.length;i++)
+        {
+            instruct[i] = ins.get(i);
+        }
+        return  instruct;
+    }
     public void executeCMD(KeyEvent event) throws Exception {
 
             if(event.getCode() == KeyCode.ENTER)
@@ -147,7 +188,7 @@ public class MainController implements Initializable {
                             cmdView.appendText(content+"\n");
                         }else if(instruction[0].contains("copy")&&instruction.length==3){
 
-                }else if(instruction[0].contains("mkdir")){
+                        }else if(instruction[0].contains("mkdir")){
                             os.fileOperator.mkdir(instruction[1]);
                             cmdView.appendText("-> 创建目录成功\n");
                         }else if(instruction[0].contains("rmdir")){
@@ -157,7 +198,10 @@ public class MainController implements Initializable {
                             int newProperty = Integer.valueOf(instruction[2]).intValue();
                             os.fileOperator.changeProperty(instruction[1],newProperty);
                             cmdView.appendText("-> 修改文件属性成功\n");
-                        }else {
+                        }else if(instruction[0].contains("run")){
+                            os.fileOperator.run(instruction[1]);
+                        }else
+                        {
                             cmdView.appendText("-> 指令不存在\n");
                             return;
                         }

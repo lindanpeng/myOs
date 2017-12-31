@@ -107,11 +107,12 @@ public class CPU implements Runnable {
                     break;
                 case 3:deviceNum = DR;  //!??
                         devideTime =SR;
-                        result +="Device: "+DR+", Time:"+SR;
+                        result +="! Device: "+DR+", Time:"+SR;
                     break;
-                case 4:destory();    //END
+                case 4:result += "END";
+                    destory();    //END
                         dispatch();
-                        result += "END";
+
                     break;
                 case 5:switch (DR){ //MOV
                     case 0:AX = nextIR;result +="MOV AX,"+nextIR+", AX="+AX;break;
@@ -181,6 +182,7 @@ public class CPU implements Runnable {
                 //移除掉PCB对应的块
                 it.next();
                 it.remove();
+                it.hasPrevious();
                 it.previous();
                 subArea=pre;
             }
