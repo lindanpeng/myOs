@@ -61,7 +61,7 @@ public class CPU implements Runnable {
         {
             PC++;
         }
-        System.out.println("取指完成，开始运行指令"+IR);
+    //    System.out.println("取指完成，开始运行指令"+IR);
     }
 
     /**
@@ -79,7 +79,7 @@ public class CPU implements Runnable {
             nextIR = userArea[PC];
             PC++;
         }
-        System.out.println("译码完成");
+   //     System.out.println("译码完成");
     }
 
     /**
@@ -238,11 +238,11 @@ public class CPU implements Runnable {
     private void  saveContext(PCB pcb){
         System.out.println("保留现场");
         pcb.setStatus(PCB.STATUS_WAIT);
-        pcb.setCounter(this.getPC());
-        pcb.setAX(this.getAX());
-        pcb.setBX(this.getBX());
-        pcb.setCX(this.getCX());
-        pcb.setDX(this.getDX());
+        pcb.setCounter(PC);
+        pcb.setAX(this.AX);
+        pcb.setBX(this.BX);
+        pcb.setCX(this.CX);
+        pcb.setDX(this.DX);
     }
 
     /**
@@ -251,11 +251,11 @@ public class CPU implements Runnable {
     private void recoveryContext(PCB pcb){
         System.out.println("恢复现场");
         pcb.setStatus(PCB.STATUS_RUN);
-        this.setAX(pcb.getAX());
-        this.setBX(pcb.getBX());
-        this.setCX(pcb.getDX());
-        this.setDX(pcb.getDX());
-        this.setPC(pcb.getCounter());
+        this.AX=pcb.getAX();
+        this.BX=pcb.getBX();
+        this.DX=pcb.getDX();
+        this.CX=pcb.getCX();
+        this.PC=pcb.getCounter();
     }
 
     @Override
@@ -293,55 +293,13 @@ public class CPU implements Runnable {
     }
     public int getResult()
     {
-        return result;
+        int temp;
+        lock.lock();
+        temp=result;
+        lock.unlock();
+        return temp;
     }
 
-    public int getIR() {
-        return IR;
-    }
 
-    public void setIR(int IR) {
-        this.IR = IR;
-    }
-
-    public int getAX() {
-        return AX;
-    }
-
-    public void setAX(int AX) {
-        this.AX = AX;
-    }
-
-    public int getBX() {
-        return BX;
-    }
-
-    public void setBX(int BX) {
-        this.BX = BX;
-    }
-
-    public int getCX() {
-        return CX;
-    }
-
-    public void setCX(int CX) {
-        this.CX = CX;
-    }
-
-    public int getDX() {
-        return DX;
-    }
-
-    public void setDX(int DX) {
-        this.DX = DX;
-    }
-
-    public int getPC() {
-        return PC;
-    }
-
-    public void setPC(int PC) {
-        this.PC = PC;
-    }
 }
 
