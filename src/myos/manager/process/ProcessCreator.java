@@ -2,14 +2,10 @@ package myos.manager.process;
 
 import myos.OS;
 import myos.constant.OsConstant;
-import myos.manager.filesys.FileOperator;
 import myos.manager.memory.Memory;
-import myos.manager.memory.PCB;
 import myos.manager.memory.SubArea;
 
-import java.util.List;
 import java.util.ListIterator;
-import java.util.Queue;
 
 /**
  * Created by lindanpeng on 2017/12/24.
@@ -27,9 +23,7 @@ public class ProcessCreator {
      * @param program
      */
     public void create(byte[] program) throws Exception {
-        for (int i=0;i<program.length;i++){
-            System.out.println("指令"+i+"是"+program[i]);
-        }
+
         /*申请空白进程块*/
         int pcbSize=memory.getAllPCB().size();
         if (pcbSize>=OsConstant.PROCESS_MAX)
@@ -55,6 +49,7 @@ public class ProcessCreator {
            subArea.setTaskNo(newPCB.getPID());
            subArea.setStatus(SubArea.STATUS_BUSY);
            SubArea newSubArea=new SubArea();
+           //新的空闲区域
            newSubArea.setStatus(SubArea.STATUS_FREE);
            newSubArea.setSize(newSubAreaSize);
            newSubArea.setStartAdd(subArea.getStartAdd()+subArea.getSize());

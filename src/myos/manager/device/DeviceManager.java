@@ -1,6 +1,6 @@
 package myos.manager.device;
 
-import myos.manager.memory.PCB;
+import myos.manager.process.PCB;
 import myos.manager.process.CPU;
 
 import java.util.concurrent.ArrayBlockingQueue;

@@ -1,6 +1,6 @@
 package myos.manager.device;
 
-import myos.manager.memory.PCB;
+import myos.manager.process.PCB;
 import myos.others.DelayItem;
 
 import java.util.concurrent.TimeUnit;

@@ -31,20 +31,21 @@ public class Clock implements Runnable {
     }
     @Override
     public void run() {
-        while(true) {
+        while(OS.launched) {
             try {
+                systemTime+=TIMESLICE_UNIT/1000;
+                restTime=(restTime+TIMESLICE_LENGTH-TIMESLICE_UNIT/1000)%TIMESLICE_LENGTH;
+                //时间片到了
+                if (restTime==0){
+                    System.out.println("时间片用完了");
+                    cpu.toReady();
+                    cpu.dispatch();
+                }
                 Thread.sleep(TIMESLICE_UNIT);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                return;
             }
-            systemTime+=TIMESLICE_UNIT/1000;
-            restTime=(restTime+TIMESLICE_LENGTH-TIMESLICE_UNIT/1000)%TIMESLICE_LENGTH;
-            //时间片到了
-            if (restTime==0){
-                System.out.println("时间片用完了");
-                cpu.toReady();
-                cpu.dispatch();
-            }
+
 
         }
 

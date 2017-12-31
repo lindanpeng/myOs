@@ -9,18 +9,15 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import myos.Main;
 import myos.OS;
 import myos.constant.UIResources;
 import myos.manager.filesys.Catalog;
-import myos.manager.filesys.OpenedFile;
-import myos.manager.memory.PCB;
+import myos.manager.process.PCB;
 import myos.manager.memory.SubArea;
 import myos.manager.process.Clock;
 import myos.others.ThreadPoolUtil;
@@ -66,7 +63,6 @@ public class MainController implements Initializable {
     @FXML
     private HBox userAreaView;
     private OS os;
-    private boolean launched = false;
     private UpdateUIThread updateUIThread;
 
     public MainController() throws Exception {
@@ -88,138 +84,125 @@ public class MainController implements Initializable {
         updateFatView();
 
     }
+
+    /**
+     * 清空组件视图
+     */
+    public void clearComponent() {
+        processRunningView.setText("");
+        processResultView.setText("");
+        cmdView.setText("");
+    }
     /*-------------------响应用户请求------------------------*/
 
     /**
      * 启动系统
      */
     public void launchOS() throws Exception {
-        if (!launched) {
+        if (!os.launched) {
+            os.launched = true;
             os.start();
-            launched = true;
             startBtn.setText("关闭系统");
             initComponent();
-            ThreadPoolUtil.execute(updateUIThread);
-
-//           new Thread(()-> {
-//                   try {
-                      os.fileOperator.create("rt/bbb",16);
-                     os.fileOperator.open("rt/bbb", OpenedFile.OP_TYPE_WRITE);
-                        byte[] b=getInstruction();
-                      os.fileOperator.append("rt/bbb",b,b.length);
-                      os.fileOperator.close("rt/bbb");
-//
-                    os.fileOperator.run("rt/bbb");
-//                   } catch (InterruptedException e) {
-//                       e.printStackTrace();
-//                   } catch (Exception e) {
-//                       e.printStackTrace();
-//                   }
-//           }).start();
+            new Thread(updateUIThread).start();
         } else {
-            closeOS();
-            launched = false;
+            os.launched = false;
+            os.close();
+            clearComponent();
             startBtn.setText("启动系统");
-            ThreadPoolUtil.shutdown();
         }
     }
-    public byte[] getInstruction()
-    {
-        String[] instruction ={"mov ax,50","inc ax","mov bx,111","dec bx","! a 1","end"};
-        ArrayList<Byte> ins=new ArrayList<>();
-        for(int i=0;i<instruction.length;i++)
-        {
-            String[] str=instruction[i].split("[\\s|,]");
+
+    public byte[] getInstruction() {
+        String[] instruction = {"mov ax,50", "inc ax", "mov bx,111", "dec bx", "! a 1", "end"};
+        ArrayList<Byte> ins = new ArrayList<>();
+        for (int i = 0; i < instruction.length; i++) {
+            String[] str = instruction[i].split("[\\s|,]");
             byte first;
-            byte second =(byte)0;
-            if(str.length>1) {
+            byte second = (byte) 0;
+            if (str.length > 1) {
                 if (str[1].contains("a"))
                     second = 0;
                 else if (str[1].contains("b")) {
                     second = 4;
-                } else if (str[1].contains("b")) {
+                } else if (str[1].contains("c")) {
                     second = 8;
                 } else {
                     second = 12;
                 }
             }
-            if(str[0].contains("mov")) {
-                first = (byte)80;
-                ins.add((byte)(first+second));
+            if (str[0].contains("mov")) {
+                first = (byte) 80;
+                ins.add((byte) (first + second));
                 ins.add(Byte.valueOf(str[2]));
-            }else if(str[0].contains("inc")){
-                first = (byte)16;
-                ins.add((byte)(first+second));
-            }else if(str[0].contains("dec")){
-                first = (byte)32;
-                ins.add((byte)(first+second));
-            }else if(str[0].contains("!")){
-                first = (byte)48;
-                ins.add((byte)(first+second+Byte.valueOf(str[2])));
-            }else if(str[0].contains("end")){
-                ins.add((byte)64);
+            } else if (str[0].contains("inc")) {
+                first = (byte) 16;
+                ins.add((byte) (first + second));
+            } else if (str[0].contains("dec")) {
+                first = (byte) 32;
+                ins.add((byte) (first + second));
+            } else if (str[0].contains("!")) {
+                first = (byte) 48;
+                ins.add((byte) (first + second + Byte.valueOf(str[2])));
+            } else if (str[0].contains("end")) {
+                ins.add((byte) 64);
             }
         }
-        byte[] instruct= new byte[ins.size()];
-        for(int i=0;i<instruct.length;i++)
-        {
+        byte[] instruct = new byte[ins.size()];
+        for (int i = 0; i < instruct.length; i++) {
             instruct[i] = ins.get(i);
         }
-        return  instruct;
+        return instruct;
     }
+
     public void executeCMD(KeyEvent event) throws Exception {
 
-            if(event.getCode() == KeyCode.ENTER)
-            {
-                String[] str  = cmdView.getText().split("\\n");
-                String s = str[str.length-1];
-                String[] instruction = s.trim().split("\\s+");
-                if(instruction.length>1) {
-                    System.out.println(instruction[0] + " "+instruction[1]);
-                    try{
-                        if(instruction[0].contains("create")) {
-                            os.fileOperator.create(instruction[1],4);
-                            cmdView.appendText("-> 创建文件成功\n");
-                        }else if(instruction[0].contains("delete")){
-                            os.fileOperator.delete(instruction[1]);
-                            cmdView.appendText("-> 删除文件成功\n");
-                        }else if(instruction[0].contains("type")){
-                            String content = os.fileOperator.type(instruction[1]);
-                            cmdView.appendText(content+"\n");
-                        }else if(instruction[0].contains("copy")&&instruction.length==3){
+        if (event.getCode() == KeyCode.ENTER) {
+            String[] str = cmdView.getText().split("\\n");
+            String s = str[str.length - 1];
+            String[] instruction = s.trim().split("\\s+");
+            if (instruction.length > 1) {
+                System.out.println(instruction[0] + " " + instruction[1]);
+                try {
+                    if (instruction[0].contains("create")) {
+                        os.fileOperator.create(instruction[1], 4);
+                        cmdView.appendText("-> 创建文件成功\n");
+                    } else if (instruction[0].contains("delete")) {
+                        os.fileOperator.delete(instruction[1]);
+                        cmdView.appendText("-> 删除文件成功\n");
+                    } else if (instruction[0].contains("type")) {
+                        String content = os.fileOperator.type(instruction[1]);
+                        cmdView.appendText(content + "\n");
+                    } else if (instruction[0].contains("copy") && instruction.length == 3) {
 
-                        }else if(instruction[0].contains("mkdir")){
-                            os.fileOperator.mkdir(instruction[1]);
-                            cmdView.appendText("-> 创建目录成功\n");
-                        }else if(instruction[0].contains("rmdir")){
-                            os.fileOperator.rmdir(instruction[1]);
-                            cmdView.appendText("-> 删除目录成功\n");
-                        }else if(instruction[0].contains("change")&&instruction.length==3){
-                            int newProperty = Integer.valueOf(instruction[2]).intValue();
-                            os.fileOperator.changeProperty(instruction[1],newProperty);
-                            cmdView.appendText("-> 修改文件属性成功\n");
-                        }else if(instruction[0].contains("run")){
-                            os.fileOperator.run(instruction[1]);
-                        }else
-                        {
-                            cmdView.appendText("-> 指令不存在\n");
-                            return;
-                        }
-                    }catch (Exception ex){
-                        String[] exception = ex.toString().split(":");
-                        cmdView.appendText("-> "+exception[exception.length-1].trim()+"\n");
+                    } else if (instruction[0].contains("mkdir")) {
+                        os.fileOperator.mkdir(instruction[1]);
+                        cmdView.appendText("-> 创建目录成功\n");
+                    } else if (instruction[0].contains("rmdir")) {
+                        os.fileOperator.rmdir(instruction[1]);
+                        cmdView.appendText("-> 删除目录成功\n");
+                    } else if (instruction[0].contains("change") && instruction.length == 3) {
+                        int newProperty = Integer.valueOf(instruction[2]).intValue();
+                        os.fileOperator.changeProperty(instruction[1], newProperty);
+                        cmdView.appendText("-> 修改文件属性成功\n");
+                    } else if (instruction[0].contains("run")) {
+                        os.fileOperator.run(instruction[1]);
+                        System.out.println("运行文件成功");
+                    } else {
+                        cmdView.appendText("-> 指令不存在\n");
+                        return;
                     }
-                }else
-                {
-                    cmdView.appendText("-> 请按正确格式输入指令\n");
-                    return;
+                } catch (Exception ex) {
+                    String[] exception = ex.toString().split(":");
+                    cmdView.appendText("-> " + exception[exception.length - 1].trim() + "\n");
                 }
+            } else {
+                cmdView.appendText("-> 请按正确格式输入指令\n");
+                return;
             }
+        }
     }
 
-    public void closeOS() {
-        os.close();
-    }
     /*---------------------后台主动刷新---------------------------------*/
 
     /**
@@ -353,13 +336,14 @@ public class MainController implements Initializable {
     private class UpdateUIThread implements Runnable {
         @Override
         public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (os.launched) {
+                System.out.println("wtf");
                 try {
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
                             //更新进程执行过程视图
-                            MainController.this.processRunningView.appendText(os.cpu.getResult()+"\n");
+                            MainController.this.processRunningView.appendText(os.cpu.getResult() + "\n");
                             //更新系统时钟视图
                             MainController.this.systemTimeTxt.setText(OS.clock.getSystemTime() + "");
                             //更新时间片视图
@@ -375,16 +359,15 @@ public class MainController implements Initializable {
                             pcbQueueView.setItems(datas);
                             //更新用户区内存视图
                             userAreaView.getChildren().removeAll(userAreaView.getChildren());
-                            List<SubArea> subAreas=os.memory.getSubAreas();
-                            for (SubArea subArea:subAreas){
-                                Pane pane=new Pane();
+                            List<SubArea> subAreas = os.memory.getSubAreas();
+                            for (SubArea subArea : subAreas) {
+                                Pane pane = new Pane();
                                 pane.setPrefHeight(40);
                                 pane.setPrefWidth(subArea.getSize());
-                                if (subArea.getStatus()==SubArea.STATUS_BUSY){
+                                if (subArea.getStatus() == SubArea.STATUS_BUSY) {
                                     pane.setStyle("-fx-background-color: orangered;-fx-border-color:black");
-                                }
-                                else{
-                                    pane.setStyle("-fx-background-color:snow;-fx-border-color: black");
+                                } else {
+                                    pane.setStyle("-fx-background-color:yellowgreen;-fx-border-color: black");
                                 }
 
                                 userAreaView.getChildren().add(pane);
@@ -395,7 +378,7 @@ public class MainController implements Initializable {
 
                     Thread.sleep(Clock.TIMESLICE_UNIT);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    return;
                 }
             }
         }

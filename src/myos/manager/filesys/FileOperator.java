@@ -623,6 +623,7 @@ public class FileOperator {
     public Catalog readCatalog(int blockPos) {
         Catalog catalog = null;
         try {
+
             disk.seek(blockPos * OsConstant.DISK_BLOCK_SIZE);
             byte[] buffer = new byte[8];
             disk.read(buffer, 0, buffer.length);

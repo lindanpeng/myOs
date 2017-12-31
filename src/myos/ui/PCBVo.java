@@ -1,7 +1,7 @@
 package myos.ui;
 
 import javafx.beans.property.SimpleStringProperty;
-import myos.manager.memory.PCB;
+import myos.manager.process.PCB;
 
 /**
  * Created by lindanpeng on 2017/12/30.

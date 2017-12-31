@@ -3,12 +3,9 @@ package myos.manager.process;
 import myos.OS;
 import myos.manager.device.DeviceManager;
 import myos.manager.memory.Memory;
-import myos.manager.memory.PCB;
 import myos.manager.memory.SubArea;
-import myos.manager.process.Clock;
 
-import javax.crypto.spec.RC2ParameterSpec;
-import java.util.ListIterator;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -30,7 +27,7 @@ public class CPU implements Runnable {
     private int SR;
     private String result;
     private int deviceNum;
-    private int devideTime;
+    private int deviceTime;
 
     private Memory memory;
     private DeviceManager deviceManager;
@@ -106,11 +103,11 @@ public class CPU implements Runnable {
                     }
                     break;
                 case 3:deviceNum = DR;  //!??
-                        devideTime =SR;
+                        deviceTime =SR;
                         result +="! Device: "+DR+", Time:"+SR;
                     break;
                 case 4:result += "END";
-                    destory();    //END
+                        destroy();    //END
                         dispatch();
 
                     break;
@@ -131,11 +128,12 @@ public class CPU implements Runnable {
      * 进程调度,将进程从就绪态恢复到运行态
      */
     public void dispatch() {
-        lock.lock();
-        try {
         PCB pcb1= memory.getRunningPCB();//当前运行的进程
         PCB pcb2=memory.getWaitPCB().poll();//要运行的进程
-            if (pcb2==null){
+        lock.lock();
+        try {
+
+            if (pcb2==memory.getHangOutPCB()){
                 pcb2=memory.getHangOutPCB();
             }
              memory.setRunningPCB(pcb2);
@@ -153,51 +151,78 @@ public class CPU implements Runnable {
         } finally {
             CPU.lock.unlock();
         }
-        System.out.println("进程调度完成");
+        System.out.println("进程调度完成，当前运行进程为"+pcb2.getPID());
     }
 
 
     /**
      * 进程撤销
      */
-    public void destory(){
+    public void destroy(){
+        lock.lock();
         PCB pcb=memory.getRunningPCB();
+        System.out.println("进程"+pcb.getPID()+"运行结束,撤销进程");
         /*回收进程所占内存*/
         SubArea subArea=null;
-        ListIterator<SubArea> it=memory.getSubAreas().listIterator();
-        while(it.hasNext()){
-            SubArea s=it.next();
-            if (s.getTaskNo()==pcb.getPID()) {
-                subArea = s;
+        List<SubArea> subAreas=memory.getSubAreas();
+        for (SubArea s:subAreas){
+            if (s.getTaskNo()==pcb.getPID()){
+                subArea=s;
                 break;
             }
         }
-        subArea.setStatus(SubArea.STATUS_FREE);
-        //如果有前一个块
-        if (it.hasPrevious()){
-            SubArea pre=it.previous();
-            // 且前一个块是空闲块，则合并
-            if(pre.getStatus()==SubArea.STATUS_FREE){
-                pre.setSize(pre.getSize()+subArea.getSize());
-                //移除掉PCB对应的块
-                it.next();
-                it.remove();
-                it.hasPrevious();
-                it.previous();
-                subArea=pre;
+        int index=subAreas.indexOf(subArea);
+        if (index>0){
+            SubArea preSubArea=subAreas.get(index-1);
+            if(preSubArea.getStatus()==SubArea.STATUS_FREE) {
+                preSubArea.setSize(preSubArea.getSize() + subArea.getSize());
+                subAreas.remove(subArea);
+                subArea=preSubArea;
             }
         }
-        //如果有后一个块
-        if (it.hasNext()){
-            SubArea next=it.next();
-            //且后一个块是空闲块，则合并
-            if (next.getStatus()==SubArea.STATUS_FREE){
-                subArea.setSize(subArea.getSize()+next.getSize());
-                it.remove();
+        if (index<subAreas.size()-1){
+            SubArea nextSubArea=subAreas.get(index+1);
+            if (nextSubArea.getStatus()==SubArea.STATUS_FREE) {
+                nextSubArea.setSize(nextSubArea.getSize() + subArea.getSize());
+                subAreas.remove(subArea);
             }
         }
-        //TODO 进程控制块回收以及显示结果在CPU处理
-
+        lock.unlock();
+//        SubArea subArea=null;
+//        ListIterator<SubArea> it=memory.getSubAreas().listIterator();
+//      //找到要撤销的进程所占用的分区块
+//        while(it.hasNext()){
+//            SubArea s=it.next();
+//            if (s.getTaskNo()==pcb.getPID()) {
+//                subArea = s;
+//                break;
+//            }
+//        }
+//        it.previous();
+//        System.out.println("进程占用第"+memory.getSubAreas().indexOf(subArea)+"块");
+//        subArea.setStatus(SubArea.STATUS_FREE);
+//        //如果有前一个块
+//        if (it.hasPrevious()){
+//            SubArea pre=it.previous();
+//            // 且前一个块是空闲块，则合并
+//            if(pre.getStatus()==SubArea.STATUS_FREE){
+//                pre.setSize(pre.getSize()+subArea.getSize());
+//                //移除掉PCB对应的块
+//                it.next();
+//                it.remove();
+//                it.previous();
+//                subArea=pre;
+//            }
+//        }
+//        //如果有后一个块
+//        if (it.hasNext()){
+//            SubArea next=it.next();
+//            //且后一个块是空闲块，则合并
+//            if (next.getStatus()==SubArea.STATUS_FREE){
+//                subArea.setSize(subArea.getSize()+next.getSize());
+//                it.remove();
+//            }
+//        }
 
     }
 
@@ -263,7 +288,7 @@ public class CPU implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (OS.launched) {
             lock.lock();
             try {
                 fetchInstruction();
@@ -279,7 +304,7 @@ public class CPU implements Runnable {
             try {
                 Thread.sleep(Clock.TIMESLICE_UNIT);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                return;
             }
 
 
@@ -290,9 +315,9 @@ public class CPU implements Runnable {
     {
         return  deviceNum;
     }
-    public int getDevideTime()
+    public int getDeviceTime()
     {
-        return devideTime;
+        return deviceTime;
     }
     public String getResult()
     {

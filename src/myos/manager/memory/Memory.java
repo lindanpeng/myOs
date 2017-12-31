@@ -1,8 +1,10 @@
 package myos.manager.memory;
 
 import myos.constant.OsConstant;
+import myos.manager.process.PCB;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by lindanpeng on 2017/12/12.
@@ -11,8 +13,6 @@ import java.util.*;
 public class Memory {
     //内存分配表
     private List<SubArea> subAreas;
-    //所有进程
-    private List<PCB> allPCB;
 /*    //空闲进程控制块
     private Queue<PCB> freePCB;*/
     //就绪进程控制块
@@ -26,21 +26,24 @@ public class Memory {
     //用户区内存
     private byte[] userArea;
     public Memory() {
-        subAreas = new LinkedList<>();
+        subAreas =Collections.synchronizedList(new LinkedList<>());
+        waitPCB =  new LinkedList<>();
+        blockPCB = new LinkedList<>();
+        hangOutPCB=new PCB();
+        userArea = new byte[OsConstant.USER_AREA_SIZE];
+    }
+    public void init(){
+        Arrays.fill(userArea,(byte) 0);
+        waitPCB.removeAll(waitPCB);
+        hangOutPCB.setStatus(PCB.STATUS_RUN);
+        runningPCB=hangOutPCB;
+        subAreas.removeAll(subAreas);
         SubArea subArea = new SubArea();
         subArea.setSize(OsConstant.USER_AREA_SIZE);
         subArea.setStartAdd(0);
         subArea.setStatus(SubArea.STATUS_FREE);
         subAreas.add(subArea);
-       // freePCB = new LinkedList<>();
-        waitPCB =  new LinkedList<>();
-        blockPCB = new LinkedList<>();
-        hangOutPCB=new PCB();
-        hangOutPCB.setStatus(PCB.STATUS_RUN);
-        runningPCB=hangOutPCB;
-        userArea = new byte[OsConstant.USER_AREA_SIZE];
     }
-
     public List<SubArea> getSubAreas() {
         return subAreas;
     }
@@ -92,10 +95,6 @@ public class Memory {
         allPCB.addAll(blockPCB);
         allPCB.addAll(waitPCB);
         return allPCB;
-    }
-
-    public void setAllPCB(List<PCB> allPCB) {
-        this.allPCB = allPCB;
     }
 
 }
