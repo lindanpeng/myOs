@@ -28,7 +28,7 @@ public class CPU implements Runnable {
     private int OP;
     private int DR;
     private int SR;
-    private int result;
+    private String result;
     private int deviceNum;
     private int devideTime;
 
@@ -86,41 +86,42 @@ public class CPU implements Runnable {
      * 执行和写回
      */
     public void execute() {
-        result =0;
+        result ="NOP";
         if(IR !=0)
         {
+            result ="";
             switch (OP) {
                 case 1:switch (DR){  //ADD
-                    case 0:AX++;result =AX;break;
-                    case 1:BX++;result =BX;break;
-                    case 2:CX++;result = CX;break;
-                    case 3:DX++;result = DX;break;
+                    case 0:AX++;result +="INC AX, AX="+AX;break;
+                    case 1:BX++;result +="INC BX, BX="+BX;break;
+                    case 2:CX++;result +="INC CX, CX=" +CX;break;
+                    case 3:DX++;result +="INC DX, DX=" +DX;break;
                     }
                 break;
                 case 2:switch (DR){ //DEC
-                    case 0:AX--;result =AX;break;
-                    case 1:BX--;result =BX;break;
-                    case 2:CX--;result = CX;break;
-                    case 3:DX--;result = DX;break;
+                    case 0:AX--;result +="DEC AX, AX="+AX;break;
+                    case 1:BX--;result +="DEC BX, BX="+BX;break;
+                    case 2:CX--;result +="DEC CX, CX="+ CX;break;
+                    case 3:DX--;result +="DEC DX, DX="+ DX;break;
                     }
                     break;
                 case 3:deviceNum = DR;  //!??
                         devideTime =SR;
+                        result +="Device: "+DR+", Time:"+SR;
                     break;
                 case 4:destory();    //END
                         dispatch();
+                        result += "END";
                     break;
                 case 5:switch (DR){ //MOV
-                    case 0:AX = nextIR;result =AX;break;
-                    case 1:BX = nextIR;result =BX;break;
-                    case 2:CX = nextIR;result = CX;break;
-                    case 3:DX = nextIR;result = DX;break;
+                    case 0:AX = nextIR;result +="MOV AX,"+nextIR+", AX="+AX;break;
+                    case 1:BX = nextIR;result +="MOV BX,"+nextIR+", BX="+BX;break;
+                    case 2:CX = nextIR;result +="MOV CX,"+nextIR+", CX="+ CX;break;
+                    case 3:DX = nextIR;result +="MOV DX,"+nextIR+", DX="+ DX;break;
                 }
                     break;
             }
         }
-
-
         //TODO 如果是end指令就进程调度
         System.out.println("指令"+IR+"运行完毕");
 
@@ -291,9 +292,9 @@ public class CPU implements Runnable {
     {
         return devideTime;
     }
-    public int getResult()
+    public String getResult()
     {
-        int temp;
+        String temp;
         lock.lock();
         temp=result;
         lock.unlock();
