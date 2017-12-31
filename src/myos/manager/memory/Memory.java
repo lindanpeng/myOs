@@ -20,7 +20,7 @@ public class Memory {
     //阻塞进程控制块
     private Queue<PCB> blockPCB;
     //运行进程
-    private PCB runningPCB;
+    private  PCB runningPCB;
     //闲逛进程
     private PCB hangOutPCB;
     //用户区内存

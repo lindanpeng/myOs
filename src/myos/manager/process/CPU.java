@@ -2,6 +2,7 @@ package myos.manager.process;
 
 import myos.OS;
 import myos.manager.device.DeviceManager;
+import myos.manager.device.DeviceRequest;
 import myos.manager.memory.Memory;
 import myos.manager.memory.SubArea;
 
@@ -25,9 +26,8 @@ public class CPU implements Runnable {
     private int OP;
     private int DR;
     private int SR;
-    private String result;
-    private int deviceNum;
-    private int deviceTime;
+    private String result="NOP";
+
 
     private Memory memory;
     private DeviceManager deviceManager;
@@ -52,10 +52,11 @@ public class CPU implements Runnable {
      * 取值
      */
     public void fetchInstruction() {
-        byte[] userArea = memory.getUserArea();
-        IR = userArea[PC];
-        if(IR !=0)           //NOP不执行
-        {
+        if (memory.getRunningPCB()==memory.getHangOutPCB()){
+            IR=0;//NOP不执行
+        }else{
+            byte[] userArea = memory.getUserArea();
+            IR = userArea[PC];
             PC++;
         }
     //    System.out.println("取指完成，开始运行指令"+IR);
@@ -102,9 +103,23 @@ public class CPU implements Runnable {
                     case 3:DX--;result +="DEC DX, DX="+ DX;break;
                     }
                     break;
-                case 3:deviceNum = DR;  //!??
-                        deviceTime =SR;
+                case 3:              //!??
+                    String deviceName=null;
+                    switch (DR){
+                        case 0:deviceName="A";break;
+                        case 1:deviceName="B";break;
+                        case 2:deviceName="C";break;
+                    }
+
                         result +="! Device: "+DR+", Time:"+SR;
+                    DeviceRequest deviceRequest=new DeviceRequest();
+                    deviceRequest.setDeviceName(deviceName);
+                    deviceRequest.setWorkTime(SR*20000);
+                    deviceRequest.setPcb(memory.getRunningPCB());
+                    //阻塞进程
+                    block();
+                    dispatch();
+                    deviceManager.requestDevice(deviceRequest);
                     break;
                 case 4:result += "END";
                         destroy();    //END
@@ -121,7 +136,7 @@ public class CPU implements Runnable {
             }
         }
         //TODO 如果是end指令就进程调度
-        System.out.println("指令"+IR+"运行完毕");
+        //System.out.println("指令"+IR+"运行完毕");
 
     }
     /**
@@ -130,28 +145,22 @@ public class CPU implements Runnable {
     public void dispatch() {
         PCB pcb1= memory.getRunningPCB();//当前运行的进程
         PCB pcb2=memory.getWaitPCB().poll();//要运行的进程
-        lock.lock();
-        try {
-
-            if (pcb2==memory.getHangOutPCB()){
-                pcb2=memory.getHangOutPCB();
+            if (pcb2==null){
+                pcb2=memory.getRunningPCB();
             }
-             memory.setRunningPCB(pcb2);
+            //如果第一个就绪进程是闲逛进程且还有其他的就绪进程
+            if (pcb2==memory.getHangOutPCB()&&memory.getWaitPCB().size()>0){
+                memory.getWaitPCB().offer(pcb2);
+                pcb2=memory.getWaitPCB().poll();
+            }
+
+            memory.setRunningPCB(pcb2);
             pcb2.setStatus(PCB.STATUS_RUN);
             //保存现场
-            if (pcb1 != memory.getHangOutPCB()) {
-              saveContext(pcb1);
-            }
+            saveContext(pcb1);
             //恢复现场
-            if (pcb2 != memory.getHangOutPCB()) {
-               recoveryContext(pcb2);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            CPU.lock.unlock();
-        }
-        System.out.println("进程调度完成，当前运行进程为"+pcb2.getPID());
+            recoveryContext(pcb2);
+            System.out.println("要运行:"+pcb2.getPID());
     }
 
 
@@ -159,7 +168,6 @@ public class CPU implements Runnable {
      * 进程撤销
      */
     public void destroy(){
-        lock.lock();
         PCB pcb=memory.getRunningPCB();
         System.out.println("进程"+pcb.getPID()+"运行结束,撤销进程");
         /*回收进程所占内存*/
@@ -171,58 +179,27 @@ public class CPU implements Runnable {
                 break;
             }
         }
+        subArea.setStatus(SubArea.STATUS_FREE);
         int index=subAreas.indexOf(subArea);
+        //如果不是第一个，判断上一个分区是否为空闲
         if (index>0){
             SubArea preSubArea=subAreas.get(index-1);
             if(preSubArea.getStatus()==SubArea.STATUS_FREE) {
                 preSubArea.setSize(preSubArea.getSize() + subArea.getSize());
                 subAreas.remove(subArea);
-                subArea=preSubArea;
+                subArea = preSubArea;
             }
         }
-        if (index<subAreas.size()-1){
+        //如果不是最后一个，判断下一个分区是否空闲
+           if (index<subAreas.size()-1){
             SubArea nextSubArea=subAreas.get(index+1);
             if (nextSubArea.getStatus()==SubArea.STATUS_FREE) {
                 nextSubArea.setSize(nextSubArea.getSize() + subArea.getSize());
+                nextSubArea.setStartAdd(subArea.getStartAdd());
                 subAreas.remove(subArea);
             }
         }
-        lock.unlock();
-//        SubArea subArea=null;
-//        ListIterator<SubArea> it=memory.getSubAreas().listIterator();
-//      //找到要撤销的进程所占用的分区块
-//        while(it.hasNext()){
-//            SubArea s=it.next();
-//            if (s.getTaskNo()==pcb.getPID()) {
-//                subArea = s;
-//                break;
-//            }
-//        }
-//        it.previous();
-//        System.out.println("进程占用第"+memory.getSubAreas().indexOf(subArea)+"块");
-//        subArea.setStatus(SubArea.STATUS_FREE);
-//        //如果有前一个块
-//        if (it.hasPrevious()){
-//            SubArea pre=it.previous();
-//            // 且前一个块是空闲块，则合并
-//            if(pre.getStatus()==SubArea.STATUS_FREE){
-//                pre.setSize(pre.getSize()+subArea.getSize());
-//                //移除掉PCB对应的块
-//                it.next();
-//                it.remove();
-//                it.previous();
-//                subArea=pre;
-//            }
-//        }
-//        //如果有后一个块
-//        if (it.hasNext()){
-//            SubArea next=it.next();
-//            //且后一个块是空闲块，则合并
-//            if (next.getStatus()==SubArea.STATUS_FREE){
-//                subArea.setSize(subArea.getSize()+next.getSize());
-//                it.remove();
-//            }
-//        }
+
 
     }
 
@@ -231,9 +208,7 @@ public class CPU implements Runnable {
      */
     public void toReady(){
         PCB pcb=memory.getRunningPCB();
-        if (pcb!=memory.getHangOutPCB()){
-            memory.getWaitPCB().offer(pcb);
-        }
+        memory.getWaitPCB().offer(pcb);
         pcb.setStatus(PCB.STATUS_WAIT);
     }
     /**
@@ -252,11 +227,14 @@ public class CPU implements Runnable {
      * 进程唤醒
      */
     public void awake(PCB pcb){
+        lock.lock();
+        System.out.println("唤醒进程"+pcb.getPID());
         //将进程从阻塞队列中调入到就绪队列
         pcb.setStatus(PCB.STATUS_WAIT);
         pcb.setEvent(PCB.EVENT_NOTING);
         memory.getBlockPCB().remove(pcb);
         memory.getWaitPCB().add(pcb);
+        lock.unlock();
     }
 
     /**
@@ -265,7 +243,6 @@ public class CPU implements Runnable {
      */
     private void  saveContext(PCB pcb){
         System.out.println("保留现场");
-        pcb.setStatus(PCB.STATUS_WAIT);
         pcb.setCounter(PC);
         pcb.setAX(this.AX);
         pcb.setBX(this.BX);
@@ -289,6 +266,11 @@ public class CPU implements Runnable {
     @Override
     public void run() {
         while (OS.launched) {
+            try {
+                Thread.sleep(Clock.TIMESLICE_UNIT);
+            } catch (InterruptedException e) {
+                return;
+            }
             lock.lock();
             try {
                 fetchInstruction();
@@ -301,24 +283,10 @@ public class CPU implements Runnable {
                 lock.unlock();
             }
 
-            try {
-                Thread.sleep(Clock.TIMESLICE_UNIT);
-            } catch (InterruptedException e) {
-                return;
-            }
-
 
         }
     }
 
-    public  int getDeviceNum()
-    {
-        return  deviceNum;
-    }
-    public int getDeviceTime()
-    {
-        return deviceTime;
-    }
     public String getResult()
     {
         String temp;
@@ -328,6 +296,8 @@ public class CPU implements Runnable {
         return temp;
     }
 
-
+    public DeviceManager getDeviceManager() {
+        return deviceManager;
+    }
 }
 

@@ -42,7 +42,8 @@ public class ProcessCreator {
         if (subArea==null)
             throw new Exception("内存不足");
         PCB newPCB=new PCB();
-        //将可用区域划分出来
+
+        //如果区域过大，分出一块新的空闲区成两块
        if (subArea.getSize()>program.length){
            int newSubAreaSize=subArea.getSize()-program.length;
            subArea.setSize(program.length);
@@ -54,6 +55,10 @@ public class ProcessCreator {
            newSubArea.setSize(newSubAreaSize);
            newSubArea.setStartAdd(subArea.getStartAdd()+subArea.getSize());
            it.add(newSubArea);
+       }else {
+           subArea.setSize(program.length);
+           subArea.setTaskNo(newPCB.getPID());
+           subArea.setStatus(SubArea.STATUS_BUSY);
        }
      //  System.out.println("进程首地址："+subArea.getStartAdd());
        //将数据复制到用户区
@@ -71,7 +76,10 @@ public class ProcessCreator {
         //判断当前是否有实际运行进程，没有的则申请进程调度
         if (memory.getRunningPCB()==null||memory.getRunningPCB()==memory.getHangOutPCB()) {
             System.out.println("申请进程调度");
+            cpu.lock.lock();
+            cpu.toReady();
             cpu.dispatch();
+            cpu.lock.unlock();
         }
 
 

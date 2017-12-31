@@ -24,14 +24,19 @@ public class Demo {
 //        if (iterator.hasPrevious()){
 //            System.out.println(iterator.previous());
 //        }
-        ExecutorService executorService= Executors.newFixedThreadPool(2);
-        B b1=new B();
-        B b2=new B();
-        executorService.execute(b1);
-        executorService.execute(b2);
-        executorService.shutdownNow();
-        executorService.execute(b1);
-        executorService.execute(b2);
+//        ExecutorService executorService= Executors.newFixedThreadPool(2);
+//        B b1=new B();
+//        B b2=new B();
+//        executorService.execute(b1);
+//        executorService.execute(b2);
+//        executorService.shutdownNow();
+//        executorService.execute(b1);
+//        executorService.execute(b2);
+        String srt="str";
+        List<String> list=new ArrayList<>();
+        list.add(srt);
+        list.add(srt);
+        System.out.println(list.size());
     }
 }
 

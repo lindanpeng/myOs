@@ -279,18 +279,18 @@
                     <items>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                            <children>
-                              <TableView layoutX="55.0" layoutY="-42.0" prefHeight="141.0" prefWidth="294.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <TableView fx:id="waitingDeviceQueueView" layoutX="55.0" layoutY="-42.0" prefHeight="141.0" prefWidth="294.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                 <columns>
-                                  <TableColumn prefWidth="155.0" text="设备名称" />
-                                  <TableColumn prefWidth="138.0" text="等待的进程" />
+                                  <TableColumn fx:id="waitingDeviceNameCol" prefWidth="155.0" text="设备名称" />
+                                  <TableColumn fx:id="waitingDevicePIDCol" prefWidth="138.0" text="等待的进程" />
                                 </columns>
                               </TableView>
                            </children>
                         </AnchorPane>
-                        <TableView prefHeight="100.0" prefWidth="296.0">
+                        <TableView fx:id="usingDeviceQueueView" prefHeight="100.0" prefWidth="296.0">
                            <columns>
-                              <TableColumn prefWidth="164.0" text="设备名称" />
-                              <TableColumn prefWidth="131.0" text="占用的进程" />
+                              <TableColumn fx:id="usingDeviceNameCol" prefWidth="164.0" text="设备名称" />
+                              <TableColumn fx:id="usingDevicePIDCol" prefWidth="131.0" text="占用的进程" />
                            </columns>
                         </TableView>
                     </items>

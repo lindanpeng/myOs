@@ -51,7 +51,7 @@ public class Device {
     public void increaseCount(){
         count.getAndIncrement();
     }
-    public void decreaseCount(){
-        count.getAndDecrement();
+    public int decreaseCount(){
+        return count.getAndDecrement();
     }
 }

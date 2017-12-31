@@ -16,11 +16,14 @@ import javafx.scene.text.Text;
 import javafx.util.Callback;
 import myos.OS;
 import myos.constant.UIResources;
+import myos.manager.device.DeviceOccupy;
+import myos.manager.device.DeviceRequest;
 import myos.manager.filesys.Catalog;
 import myos.manager.process.PCB;
 import myos.manager.memory.SubArea;
 import myos.manager.process.Clock;
 import myos.others.ThreadPoolUtil;
+import myos.ui.DeviceVo;
 import myos.ui.MyTreeItem;
 import myos.ui.PCBVo;
 
@@ -28,7 +31,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.ResourceBundle;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by lindanpeng on 2017/12/29.
@@ -62,6 +67,18 @@ public class MainController implements Initializable {
     private TableColumn priorityCol;
     @FXML
     private HBox userAreaView;
+    @FXML
+    private TableView<DeviceVo>  waitingDeviceQueueView;
+    @FXML
+    private TableColumn waitingDeviceNameCol;
+    @FXML
+    private TableColumn waitingDevicePIDCol;
+    @FXML
+    private TableView<DeviceVo>  usingDeviceQueueView;
+    @FXML
+    private TableColumn usingDeviceNameCol;
+    @FXML
+    private TableColumn usingDevicePIDCol;
     private OS os;
     private UpdateUIThread updateUIThread;
 
@@ -76,23 +93,20 @@ public class MainController implements Initializable {
      * @throws Exception
      */
     public void initComponent() throws Exception {
+        processRunningView.setText("");
+        processResultView.setText("");
+        cmdView.setText("");
         //初始化进程队列视图
         initPcbQueueView();
         //初始化目录树
         initCatalogTree();
         //初始化磁盘分配表视图
         updateFatView();
+        initUsingDeviceQueueView();
+        initWaingDeviceQueueView();
 
     }
 
-    /**
-     * 清空组件视图
-     */
-    public void clearComponent() {
-        processRunningView.setText("");
-        processResultView.setText("");
-        cmdView.setText("");
-    }
     /*-------------------响应用户请求------------------------*/
 
     /**
@@ -108,7 +122,6 @@ public class MainController implements Initializable {
         } else {
             os.launched = false;
             os.close();
-            clearComponent();
             startBtn.setText("启动系统");
         }
     }
@@ -158,6 +171,8 @@ public class MainController implements Initializable {
     public void executeCMD(KeyEvent event) throws Exception {
 
         if (event.getCode() == KeyCode.ENTER) {
+            if (cmdView.getText()==null||cmdView.getText().equals(""))
+                return;
             String[] str = cmdView.getText().split("\\n");
             String s = str[str.length - 1];
             String[] instruction = s.trim().split("\\s+");
@@ -203,7 +218,6 @@ public class MainController implements Initializable {
         }
     }
 
-    /*---------------------后台主动刷新---------------------------------*/
 
     /**
      * 构建目录树
@@ -249,7 +263,14 @@ public class MainController implements Initializable {
         eventCol.setCellValueFactory(new PropertyValueFactory<>("event"));
         priorityCol.setCellValueFactory(new PropertyValueFactory<>("priority"));
     }
-
+    public void initWaingDeviceQueueView(){
+        waitingDeviceNameCol.setCellValueFactory(new PropertyValueFactory<>("deviceName"));
+        waitingDevicePIDCol.setCellValueFactory(new PropertyValueFactory<>("PID"));
+    }
+    public void initUsingDeviceQueueView(){
+        usingDeviceNameCol.setCellValueFactory(new PropertyValueFactory<>("deviceName"));
+        usingDevicePIDCol.setCellValueFactory(new PropertyValueFactory<>("PID"));
+    }
     /**
      * 添加树节点
      *
@@ -337,12 +358,27 @@ public class MainController implements Initializable {
         @Override
         public void run() {
             while (os.launched) {
-                System.out.println("wtf");
                 try {
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            //更新进程执行过程视图
+                            //更新等待设备进程队列视图
+                            BlockingQueue<DeviceRequest> waitForDevices=os.cpu.getDeviceManager().getWaitForDevice();
+                            ObservableList<DeviceVo> deviceVos=FXCollections.observableArrayList();
+                            for (DeviceRequest deviceRequest:waitForDevices){
+                                DeviceVo deviceVo=new DeviceVo(deviceRequest.getDeviceName(),deviceRequest.getPcb().getPID());
+                                deviceVos.add(deviceVo);
+                            }
+                            waitingDeviceQueueView.setItems(deviceVos);
+                            //更新使用设备进程队列视图
+                            Queue<DeviceOccupy> usingDevices=os.cpu.getDeviceManager().getUsingDevices();
+                            ObservableList<DeviceVo> deviceVos2=FXCollections.observableArrayList();
+                            for (DeviceOccupy deviceOccupy:usingDevices){
+                                DeviceVo deviceVo=new DeviceVo(deviceOccupy.getDeviceName(),deviceOccupy.getObj().getPID());
+                                deviceVos2.add(deviceVo);
+                            }
+                            usingDeviceQueueView.setItems(deviceVos2);
+                            //更新进程执行过程视图2
                             MainController.this.processRunningView.appendText(os.cpu.getResult() + "\n");
                             //更新系统时钟视图
                             MainController.this.systemTimeTxt.setText(OS.clock.getSystemTime() + "");
@@ -361,13 +397,14 @@ public class MainController implements Initializable {
                             userAreaView.getChildren().removeAll(userAreaView.getChildren());
                             List<SubArea> subAreas = os.memory.getSubAreas();
                             for (SubArea subArea : subAreas) {
+                              //  System.out.println("占用分区的进程ID"+subArea.getTaskNo());
                                 Pane pane = new Pane();
                                 pane.setPrefHeight(40);
                                 pane.setPrefWidth(subArea.getSize());
                                 if (subArea.getStatus() == SubArea.STATUS_BUSY) {
-                                    pane.setStyle("-fx-background-color: orangered;-fx-border-color:black");
+                                    pane.setStyle("-fx-background-color: orangered;");
                                 } else {
-                                    pane.setStyle("-fx-background-color:yellowgreen;-fx-border-color: black");
+                                    pane.setStyle("-fx-background-color:yellowgreen;");
                                 }
 
                                 userAreaView.getChildren().add(pane);
