@@ -284,8 +284,10 @@ public class FileOperator {
      *
      * @param filePath 文件名
      */
-    public String show(String filePath) throws Exception {
+    public String type(String filePath) throws Exception {
+        open(filePath,OpenedFile.OP_TYPE_READ);
         byte[] content = read(filePath, -1);
+        close(filePath);
         return new String(content);
     }
 
