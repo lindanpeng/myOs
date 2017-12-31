@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -14,19 +14,14 @@ import javafx.scene.text.Text;
 import javafx.util.Callback;
 import myos.OS;
 import myos.constant.UIResources;
-import myos.manager.device.A;
 import myos.manager.filesys.Catalog;
-import myos.manager.filesys.OpenedFile;
 import myos.manager.memory.PCB;
 import myos.manager.process.Clock;
-import javafx.scene.control.cell.PropertyValueFactory;
 import myos.others.ThreadPoolUtil;
 import myos.ui.MyTreeItem;
 import myos.ui.PCBVo;
-import myos.manager.filesys.FileOperator;
 
 import java.io.IOException;
-import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,34 +115,47 @@ public class MainController implements Initializable {
         }
 
     }
-    public void executeCMD(KeyEvent event) throws  Exception{
+    public void executeCMD(KeyEvent event) {
             if(event.getCode() == KeyCode.ENTER)
             {
-                String str  = cmdView.getText();
-                cmdView.clear();
-                String[] instruction = str.trim().split("\\s+");
+                String[] str  = cmdView.getText().split("\\n");
+                String s = str[str.length-1];
+                String[] instruction = s.trim().split("\\s+");
                 if(instruction.length>1) {
                     System.out.println(instruction[0] + " "+instruction[1]);
-                    if(instruction[0].contains("create")) {
-                        os.fileOperator.create(instruction[1],4);
-                    }else if(instruction[0].contains("delete")){
-                        os.fileOperator.delete(instruction[1]);
-                    }else if(instruction[0].contains("type")){
+                    try{
+                        if(instruction[0].contains("create")) {
+                            os.fileOperator.create(instruction[1],4);
+                            cmdView.appendText("-> 创建文件成功\n");
+                        }else if(instruction[0].contains("delete")){
+                            os.fileOperator.delete(instruction[1]);
+                            cmdView.appendText("-> 删除文件成功\n");
+                        }else if(instruction[0].contains("type")){
+                            String content = os.fileOperator.type(instruction[0]);
+                            cmdView.appendText(content+"\n");
+                        }else if(instruction[0].contains("copy")&&instruction.length==3){
 
-                    }else if(instruction[0].contains("copy")&&instruction.length==3){
-
-                    }else if(instruction[0].contains("mkdir")){
-                        os.fileOperator.mkdir(instruction[1]);
-                    }else if(instruction[0].contains("rmdir")){
-                        os.fileOperator.rmdir(instruction[1]);
-                    }else if(instruction[0].contains("change")&&instruction.length==3){
-                        int newProperty = Integer.valueOf(instruction[2]).intValue();
-                        os.fileOperator.changeProperty(instruction[1],newProperty);
-                    }else {
-                        return;
+                        }else if(instruction[0].contains("mkdir")){
+                            os.fileOperator.mkdir(instruction[1]);
+                            cmdView.appendText("-> 创建目录成功\n");
+                        }else if(instruction[0].contains("rmdir")){
+                            os.fileOperator.rmdir(instruction[1]);
+                            cmdView.appendText("-> 删除目录成功\n");
+                        }else if(instruction[0].contains("change")&&instruction.length==3){
+                            int newProperty = Integer.valueOf(instruction[2]).intValue();
+                            os.fileOperator.changeProperty(instruction[1],newProperty);
+                            cmdView.appendText("-> 修改文件属性成功\n");
+                        }else {
+                            cmdView.appendText("-> 指令不存在\n");
+                            return;
+                        }
+                    }catch (Exception ex){
+                        String[] exception = ex.toString().split(":");
+                        cmdView.appendText("-> "+exception[exception.length-1].trim()+"\n");
                     }
                 }else
                 {
+                    cmdView.appendText("-> 请按正确格式输入指令\n");
                     return;
                 }
             }
