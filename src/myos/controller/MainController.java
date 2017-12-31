@@ -5,12 +5,16 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 import myos.OS;
 import myos.constant.UIResources;
+import myos.manager.device.A;
 import myos.manager.filesys.Catalog;
 import myos.manager.filesys.OpenedFile;
 import myos.manager.memory.PCB;
@@ -19,8 +23,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import myos.others.ThreadPoolUtil;
 import myos.ui.MyTreeItem;
 import myos.ui.PCBVo;
+import myos.manager.filesys.FileOperator;
 
 import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +46,8 @@ public class MainController implements Initializable {
     private Text systemTimeTxt;
     @FXML
     private Text timesliceTxt;
+    @FXML
+    private TextArea cmdView;
     @FXML
     private TextArea processRunningView;
     @FXML
@@ -113,9 +121,43 @@ public class MainController implements Initializable {
         }
 
     }
+    public void excuteCMD(KeyEvent event) throws  Exception{
+            if(event.getCode() == KeyCode.ENTER)
+            {
+                String str  = cmdView.getText();
+                String command = str.substring(0,str.length()-1).replaceAll("\\s{1,}"," ");//去除多余的空格和换行符
+                cmdView.clear();
+                String[] instruction = command.split(" ");
+                if(instruction.length>1) {
+                    System.out.println(instruction[0] + " "+instruction[1]);
+                    if(instruction[0].contains("create")) {
+                        os.fileOperator.create(instruction[1],4);
+                    }else if(instruction[0].contains("delete")){
+                        os.fileOperator.delete(instruction[1]);
+                    }else if(instruction[0].contains("type")){
+
+                    }else if(instruction[0].contains("copy")&&instruction.length==3){
+
+                    }else if(instruction[0].contains("mkdir")){
+
+                    }else if(instruction[0].contains("rmdir")){
+
+                    }else if(instruction[0].contains("change")&&instruction.length==3){
+                        int newProperty = Integer.valueOf(instruction[2]).intValue();
+                        os.fileOperator.changeProperty(instruction[1],newProperty);
+                    }else {
+                        return;
+                    }
+                }else
+                {
+                    return;
+                }
+            }
+    }
     public void closeOS(){
         os.close();
     }
+    /*---------------------后台主动刷新---------------------------------*/
     /**
      * 构建目录树
      */
@@ -149,6 +191,7 @@ public class MainController implements Initializable {
                 };
             }
         });
+      //  catalogTreeView.setCellFactory((TreeView<Catalog> p)->new MyTreeCell());
         catalogTreeView.refresh();
     }
 

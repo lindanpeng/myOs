@@ -18,11 +18,20 @@ public class CPU implements Runnable {
     static ReentrantLock lock = new ReentrantLock();
     //寄存器组
     private int IR;
-    private int AX;
-    private int BX;
-    private int CX;
-    private int DX;
+    private int AX; //0
+    private int BX; //1
+    private int CX; //2
+    private int DX; //3
     private int PC;
+
+    private int nextIR;
+    private int OP;
+    private int DR;
+    private int SR;
+    private int result;
+    private int deviceNum;
+    private int devideTime;
+
     private Memory memory;
     private DeviceManager deviceManager;
     public CPU() {
@@ -48,25 +57,72 @@ public class CPU implements Runnable {
     public void fetchInstruction() {
         byte[] userArea = memory.getUserArea();
         IR = userArea[PC];
-        PC++;
-      //  System.out.println("取指完成，开始运行指令"+IR);
+        if(IR !=0)           //NOP不执行
+        {
+            PC++;
+        }
+        System.out.println("取指完成，开始运行指令"+IR);
     }
 
     /**
      * 译码
      */
     public void identifyInstruction() {
-        //System.out.println("译码完成");
+        //移位
+        OP = (IR>>4)&0x0f;
+        DR = (IR>>2)&0x03;
+        SR = IR & 0x03;
 
-
+        if(OP == 5)
+        {
+            byte[] userArea = memory.getUserArea();
+            nextIR = userArea[PC];
+            PC++;
+        }
+        System.out.println("译码完成");
     }
 
     /**
      * 执行和写回
      */
     public void execute() {
+        result =0;
+        if(IR !=0)
+        {
+            switch (OP) {
+                case 1:switch (DR){  //ADD
+                    case 0:AX++;result =AX;break;
+                    case 1:BX++;result =BX;break;
+                    case 2:CX++;result = CX;break;
+                    case 3:DX++;result = DX;break;
+                    }
+                break;
+                case 2:switch (DR){ //DEC
+                    case 0:AX--;result =AX;break;
+                    case 1:BX--;result =BX;break;
+                    case 2:CX--;result = CX;break;
+                    case 3:DX--;result = DX;break;
+                    }
+                    break;
+                case 3:deviceNum = DR;  //!??
+                        devideTime =SR;
+                    break;
+                case 4:destory();    //END
+                        dispatch();
+                    break;
+                case 5:switch (DR){ //MOV
+                    case 0:AX = nextIR;result =AX;break;
+                    case 1:BX = nextIR;result =BX;break;
+                    case 2:CX = nextIR;result = CX;break;
+                    case 3:DX = nextIR;result = DX;break;
+                }
+                    break;
+            }
+        }
+
+
         //TODO 如果是end指令就进程调度
-     //   System.out.println("指令"+IR+"运行完毕");
+        System.out.println("指令"+IR+"运行完毕");
 
     }
     /**
@@ -98,11 +154,12 @@ public class CPU implements Runnable {
         System.out.println("进程调度完成");
     }
 
+
     /**
      * 进程撤销
-     * @param pcb
      */
-    public void destory(PCB pcb){
+    public void destory(){
+        PCB pcb=memory.getRunningPCB();
         /*回收进程所占内存*/
         SubArea subArea=null;
         ListIterator<SubArea> it=memory.getSubAreas().listIterator();
@@ -224,6 +281,19 @@ public class CPU implements Runnable {
 
 
         }
+    }
+
+    public  int getDeviceNum()
+    {
+        return  deviceNum;
+    }
+    public int getDevideTime()
+    {
+        return devideTime;
+    }
+    public int getResult()
+    {
+        return result;
     }
 
     public int getIR() {
