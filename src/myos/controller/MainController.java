@@ -101,15 +101,30 @@ public class MainController implements Initializable {
             initComponent();
             ThreadPoolUtil.execute(updateUIThread);
 
+            String[][] instruction ={{"mov ax,50","inc ax","mov bx,111","dec bx","mov cx,23","! a 1","end"},
+            {"mov ax,50","mov dx,30","mov bx,111","dec bx","inc dx","mov ax 255","! a 1","end"},
+            {"mov ax,50","! b 2","mov bx,111","! c 1","mov cx,23","! a 1","end"},
+            {"mov ax,50","inc ax","! b 1","! a 2","mov cx,23","inc cx","inc ax","! c 2","end"},
+            {"mov bx,70","inc bx","mov bx,12","dec bx","! c 3","inc bx","mov cx,23","! a 1","dec cx","end"},
+            {"mov ax,50","! b 2","mov bx,12","! c 1","mov cx,23","! a 1","mov ax,50","inc ax","mov bx,221","dec bx","mov cx,23","! a 1","end"},
+            {"mov ax,50","inc ax","! b 1","! a 2","mov cx,23","inc ax","mov bx,122","dec bx","mov cx,232","! a 1","end"},
+            {"mov ax,50","inc ax","! c 1","mov cx,23","! a 1","mov bx,111","dec bx","mov cx,20","! a 1","end"},
+            {"mov ax,50","inc ax","mov bx,13","dec bx","mov cx,23","! a 1","inc ax","mov bx,189","dec bx","mov cx,23","! a 1","end"},
+            {"mov ax,50","inc ax","mov bx,156","inc ax","mov bx,111","dec bx","mov cx,23","! a 1","dec bx","mov cx,23","! b 1","end"}};
+
+
 //           new Thread(()-> {
 //                   try {
-                      os.fileOperator.create("rt/bbb",16);
-                     os.fileOperator.open("rt/bbb", OpenedFile.OP_TYPE_WRITE);
-                        byte[] b=getInstruction();
-                      os.fileOperator.append("rt/bbb",b,b.length);
-                      os.fileOperator.close("rt/bbb");
+            for(int i=0;i<instruction.length;i++) {
+                String path = "rt/"+String.valueOf(i)+"e";
+                os.fileOperator.create(path, 16);
+                os.fileOperator.open(path, OpenedFile.OP_TYPE_WRITE);
+                byte[] b = getInstruction(instruction[i]);
+                os.fileOperator.append(path, b, b.length);
+                os.fileOperator.close(path);
 //
-                    os.fileOperator.run("rt/bbb");
+                os.fileOperator.run(path);
+            }
 //                   } catch (InterruptedException e) {
 //                       e.printStackTrace();
 //                   } catch (Exception e) {
@@ -123,18 +138,8 @@ public class MainController implements Initializable {
             ThreadPoolUtil.shutdown();
         }
     }
-    public byte[] getInstruction()
+    public byte[] getInstruction(String[] instruction)
     {
-        String[] instruction ={"mov ax,50","inc ax","mov bx,111","dec bx","mov cx,23","! a 1","end"};
-        String[] instruction1 ={"mov ax,50","mov dx,30","mov bx,111","dec bx","inc dx","mov ax 255","! a 1","end"};
-        String[] instruction2 ={"mov ax,50","! b 2","mov bx,111","! c 1","mov cx,23","! a 1","end"};
-        String[] instruction3 ={"mov ax,50","inc ax","! b 1","! a 2","mov cx,23","inc cx","inc ax","! c 2","end"};
-        String[] instruction4 ={"mov bx,70","inc bx","mov bx,12","dec bx","! c 3","inc bx","mov cx,23","! a 1","dec cx","end"};
-        String[] instruction5 ={"mov ax,50","! b 2","mov bx,12","! c 1","mov cx,23","! a 1","mov ax,50","inc ax","mov bx,221","dec bx","mov cx,23","! a 1","end"};
-        String[] instruction6 ={"mov ax,50","inc ax","! b 1","! a 2","mov cx,23","inc ax","mov bx,122","dec bx","mov cx,232","! a 1","end"};
-        String[] instruction7 ={"mov ax,50","inc ax","! c 1","mov cx,23","! a 1","mov bx,111","dec bx","mov cx,20","! a 1","end"};
-        String[] instruction8 ={"mov ax,50","inc ax","mov bx,13","dec bx","mov cx,23","! a 1","inc ax","mov bx,189","dec bx","mov cx,23","! a 1","end"};
-        String[] instruction9 ={"mov ax,50","inc ax","mov bx,156","inc ax","mov bx,111","dec bx","mov cx,23","! a 1","dec bx","mov cx,23","! b 1","end"};
         ArrayList<Byte> ins=new ArrayList<>();
         for(int i=0;i<instruction.length;i++)
         {
