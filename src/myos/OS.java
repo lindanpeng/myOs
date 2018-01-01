@@ -120,4 +120,31 @@ public class OS {
             launched = false;
     }
 
+    public static RandomAccessFile getDisk() {
+        return disk;
+    }
+
+    public static FileOperator getFileOperator() {
+        return fileOperator;
+    }
+
+    public static ProcessCreator getProcessCreator() {
+        return processCreator;
+    }
+
+    public static CPU getCpu() {
+        return cpu;
+    }
+
+    public static Memory getMemory() {
+        return memory;
+    }
+
+    public static Clock getClock() {
+        return clock;
+    }
+
+    public static boolean isLaunched() {
+        return launched;
+    }
 }

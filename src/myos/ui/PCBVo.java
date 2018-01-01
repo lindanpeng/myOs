@@ -9,12 +9,10 @@ import myos.manager.process.PCB;
 public class PCBVo {
     private SimpleStringProperty PID;
     private SimpleStringProperty status;
-    private SimpleStringProperty event;
     private SimpleStringProperty priority;
     public PCBVo(PCB pcb){
         this.PID=new SimpleStringProperty(pcb.getPID()+"");
         this.status=new SimpleStringProperty(pcb.getStatus());
-        this.event=new SimpleStringProperty(pcb.getEvent()+"");
         this.priority=new SimpleStringProperty(pcb.getPriority()+"");
     }
     public String getPID() {
@@ -41,17 +39,7 @@ public class PCBVo {
         this.status.set(status);
     }
 
-    public String getEvent() {
-        return event.get();
-    }
 
-    public SimpleStringProperty eventProperty() {
-        return event;
-    }
-
-    public void setEvent(String event) {
-        this.event.set(event);
-    }
 
     public String getPriority() {
         return priority.get();

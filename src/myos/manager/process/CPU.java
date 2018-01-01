@@ -114,7 +114,7 @@ public class CPU implements Runnable {
                         result +="! Device: "+DR+", Time:"+SR;
                     DeviceRequest deviceRequest=new DeviceRequest();
                     deviceRequest.setDeviceName(deviceName);
-                    deviceRequest.setWorkTime(SR*20000);
+                    deviceRequest.setWorkTime(SR*2000);
                     deviceRequest.setPcb(memory.getRunningPCB());
                     //阻塞进程
                     block();

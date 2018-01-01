@@ -62,8 +62,6 @@ public class MainController implements Initializable {
     @FXML
     private TableColumn statusCol;
     @FXML
-    private TableColumn eventCol;
-    @FXML
     private TableColumn priorityCol;
     @FXML
     private HBox userAreaView;
@@ -260,7 +258,6 @@ public class MainController implements Initializable {
     public void initPcbQueueView() {
         pidCol.setCellValueFactory(new PropertyValueFactory<>("PID"));
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        eventCol.setCellValueFactory(new PropertyValueFactory<>("event"));
         priorityCol.setCellValueFactory(new PropertyValueFactory<>("priority"));
     }
     public void initWaingDeviceQueueView(){
@@ -341,9 +338,9 @@ public class MainController implements Initializable {
         for (int i = 0; i < fat.length; i++) {
             Pane pane = (Pane) fatView.getChildren().get(i);
             if (fat[i] != 0) {
-                pane.setStyle("-fx-background-color: red");
+                pane.setStyle("-fx-background-color: red;-fx-border-color: #EEEEBB");
             } else {
-                pane.setStyle("-fx-background-color:coral");
+                pane.setStyle("-fx-background-color:coral;-fx-border-color: #EEEEBB");
             }
         }
 
