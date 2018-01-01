@@ -54,4 +54,8 @@ public class Device {
     public int decreaseCount(){
         return count.getAndDecrement();
     }
+
+    public void setCount(int count) {
+        this.count.set(count);
+    }
 }

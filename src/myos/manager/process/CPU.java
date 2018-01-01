@@ -34,7 +34,6 @@ public class CPU implements Runnable {
     public CPU() {
         this.memory = OS.memory;
         deviceManager=new DeviceManager(this);
-        init();
     }
 
     /**
@@ -47,6 +46,7 @@ public class CPU implements Runnable {
         CX=0;
         DX=0;
         PC=0;
+        deviceManager.init();
     }
     /**
      * 取值

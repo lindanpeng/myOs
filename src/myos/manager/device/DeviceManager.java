@@ -30,78 +30,84 @@ public class DeviceManager{
         usingDevices =new DelayQueue<>();
         waitForDevice=new ArrayBlockingQueue<>(10);
         this.cpu=cpu;
+    }
+    public void  init(){
+        a.setCount(2);
+        b.setCount(3);
+        c.setCount(3);
+        usingDevices.removeAll(usingDevices);
+        waitForDevice.removeAll(waitForDevice);
         //释放设备线程
         new Thread(()-> {
-                while(OS.launched){
-                    try {
-                        DeviceOccupy deviceOccupy = usingDevices.take();
-                        System.out.println(deviceOccupy.getDeviceName()+"设备使用完毕");
-                        deviceDone(deviceOccupy);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
+            while(OS.launched){
+                try {
+                    DeviceOccupy deviceOccupy = usingDevices.take();
+                    System.out.println(deviceOccupy.getDeviceName()+"设备使用完毕");
+                    deviceDone(deviceOccupy);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+
+            }
         }).start();
         //处理设备申请请求线程
         new Thread(()-> {
-                while(OS.launched){
-                    try {
-                        DeviceRequest deviceRequest=waitForDevice.take();
-                        DeviceOccupy deviceOccupy=new DeviceOccupy(deviceRequest.getPcb(),deviceRequest.getWorkTime(), TimeUnit.MILLISECONDS);
-                        deviceOccupy.setDeviceName(deviceRequest.getDeviceName());
-                        switch (deviceRequest.getDeviceName()){
-                            case "A":
-                                //如果有设备空闲就使用设备
-                                if (a.getCount()>0){
-                                    //可用设备减1
-                                    System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
-                                    System.out.println(a.decreaseCount());
-                                    usingDevices.put(deviceOccupy);
-                                }
-                                //否则将设备请求重新放到请求队列中
-                                else {
-                                    System.out.println("无可用"+deviceRequest.getDeviceName()+"设备，等待分配");
-                                    waitForDevice.put(deviceRequest);
-                                }
-                                break;
-                            case "B":
-                                //如果有B设备空闲就使用设备
-                                if (b.getCount()>0){
-                                    //可用设备减1
-                                    System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
-                                    b.decreaseCount();
-                                    usingDevices.put(deviceOccupy);
-                                }
-                                //否则将设备请求重新放到请求队列中
-                                else {
-                                    System.out.println("无可用"+deviceRequest.getDeviceName()+"设备，等待分配");
-                                    waitForDevice.put(deviceRequest);
-                                }
-                                break;
-                            case "C":
-                                //如果有C设备空闲就使用设备
-                                if (c.getCount()>0){
-                                    //可用设备减1
-                                    System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
-                                    c.decreaseCount();
-                                    usingDevices.put(deviceOccupy);
-                                }
-                                //否则将设备请求重新放到请求队列中
-                                else {
-                                    System.out.println("无可用"+deviceRequest.getDeviceName()+"设备，等待分配");
-                                    waitForDevice.put(deviceRequest);
-                                }
-                                break;
-                        }
-                        Thread.sleep(Clock.TIMESLICE_UNIT);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+            while(OS.launched){
+                try {
+                    DeviceRequest deviceRequest=waitForDevice.take();
+                    DeviceOccupy deviceOccupy=new DeviceOccupy(deviceRequest.getPcb(),deviceRequest.getWorkTime(), TimeUnit.MILLISECONDS);
+                    deviceOccupy.setDeviceName(deviceRequest.getDeviceName());
+                    switch (deviceRequest.getDeviceName()){
+                        case "A":
+                            //如果有设备空闲就使用设备
+                            if (a.getCount()>0){
+                                //可用设备减1
+                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
+                                System.out.println(a.decreaseCount());
+                                usingDevices.put(deviceOccupy);
+                            }
+                            //否则将设备请求重新放到请求队列中
+                            else {
+                                System.out.println("无可用"+deviceRequest.getDeviceName()+"设备，等待分配");
+                                waitForDevice.put(deviceRequest);
+                            }
+                            break;
+                        case "B":
+                            //如果有B设备空闲就使用设备
+                            if (b.getCount()>0){
+                                //可用设备减1
+                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
+                                b.decreaseCount();
+                                usingDevices.put(deviceOccupy);
+                            }
+                            //否则将设备请求重新放到请求队列中
+                            else {
+                                System.out.println("无可用"+deviceRequest.getDeviceName()+"设备，等待分配");
+                                waitForDevice.put(deviceRequest);
+                            }
+                            break;
+                        case "C":
+                            //如果有C设备空闲就使用设备
+                            if (c.getCount()>0){
+                                //可用设备减1
+                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
+                                c.decreaseCount();
+                                usingDevices.put(deviceOccupy);
+                            }
+                            //否则将设备请求重新放到请求队列中
+                            else {
+                                System.out.println("无可用"+deviceRequest.getDeviceName()+"设备，等待分配");
+                                waitForDevice.put(deviceRequest);
+                            }
+                            break;
                     }
+                    Thread.sleep(Clock.TIMESLICE_UNIT);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+            }
         }).start();
     }
-
     /**
      * 请求使用设备
      * @param
