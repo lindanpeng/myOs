@@ -118,26 +118,26 @@ public class MainController implements Initializable {
             launchOS();
             cmdView.setEditable(true);
             osSwitchBtn.setText("关闭系统");
-            String[][] instruction = {{"mov ax,50", "inc ax", "mov bx,111", "dec bx", "mov cx,23", "! a 1", "end"},
-                    {"mov ax,50", "mov dx,30", "mov bx,111", "dec bx", "inc dx", "mov ax 25", "! a 1", "end"},
-                    {"mov ax,50", "! b 2", "mov bx,111", "! c 1", "mov cx,23", "! a 1", "end"},
-                    {"mov ax,50", "inc ax", "! b 1", "! a 2", "mov cx,23", "inc cx", "inc ax", "! c 2", "end"},
-                    {"mov bx,70", "inc bx", "mov bx,12", "dec bx", "! c 3", "inc bx", "mov cx,23", "! a 1", "dec cx", "end"},
-                    {"mov ax,50", "! b 2", "mov bx,12", "! c 1", "mov cx,23", "! a 1", "mov ax,50", "inc ax", "mov bx,21", "dec bx", "mov cx,23", "! a 1", "end"},
-                    {"mov ax,50", "inc ax", "! b 1", "! a 2", "mov cx,23", "inc ax", "mov bx,122", "dec bx", "mov cx,32", "! a 1", "end"},
-                    {"mov ax,50", "inc ax", "! c 1", "mov cx,23", "! a 1", "mov bx,111", "dec bx", "mov cx,20", "! a 1", "end"},
-                    {"mov ax,50", "inc ax", "mov bx,13", "dec bx", "mov cx,23", "! a 1", "inc ax", "mov bx,112", "dec bx", "mov cx,23", "! a 1", "end"},
-                    {"mov ax,50", "inc ax", "mov bx,116", "inc ax", "mov bx,111", "dec bx", "mov cx,23", "! a 1", "dec bx", "mov cx,23", "! b 1", "end"}};
-            os.fileOperator.create("root/exe",8);
-            for (int i = 0; i < instruction.length; i++) {
-                String path = "root/exe/" + String.valueOf(i) + "e";
-                os.fileOperator.create(path, 16);
-                os.fileOperator.open(path, OpenedFile.OP_TYPE_WRITE);
-                byte[] b = getInstruction(instruction[i]);
-                os.fileOperator.append(path, b, b.length);
-               // os.fileOperator.close(path);
-//
-            }
+//            String[][] instruction = {{"mov ax,50", "inc ax", "mov bx,111", "dec bx", "mov cx,23", "! a 1", "end"},
+//                    {"mov ax,50", "mov dx,30", "mov bx,111", "dec bx", "inc dx", "mov ax 25", "! a 1", "end"},
+//                    {"mov ax,50", "! b 2", "mov bx,111", "! c 1", "mov cx,23", "! a 1", "end"},
+//                    {"mov ax,50", "inc ax", "! b 1", "! a 2", "mov cx,23", "inc cx", "inc ax", "! c 2", "end"},
+//                    {"mov bx,70", "inc bx", "mov bx,12", "dec bx", "! c 3", "inc bx", "mov cx,23", "! a 1", "dec cx", "end"},
+//                    {"mov ax,50", "! b 2", "mov bx,12", "! c 1", "mov cx,23", "! a 1", "mov ax,50", "inc ax", "mov bx,21", "dec bx", "mov cx,23", "! a 1", "end"},
+//                    {"mov ax,50", "inc ax", "! b 1", "! a 2", "mov cx,23", "inc ax", "mov bx,122", "dec bx", "mov cx,32", "! a 1", "end"},
+//                    {"mov ax,50", "inc ax", "! c 1", "mov cx,23", "! a 1", "mov bx,111", "dec bx", "mov cx,20", "! a 1", "end"},
+//                    {"mov ax,50", "inc ax", "mov bx,13", "dec bx", "mov cx,23", "! a 1", "inc ax", "mov bx,112", "dec bx", "mov cx,23", "! a 1", "end"},
+//                    {"mov ax,50", "inc ax", "mov bx,116", "inc ax", "mov bx,111", "dec bx", "mov cx,23", "! a 1", "dec bx", "mov cx,23", "! b 1", "end"}};
+//            os.fileOperator.create("root/exe",8);
+//            for (int i = 0; i < instruction.length; i++) {
+//                String path = "root/exe/" + String.valueOf(i) + "e";
+//                os.fileOperator.create(path, 16);
+//                os.fileOperator.open(path, OpenedFile.OP_TYPE_WRITE);
+//                byte[] b = getInstruction(instruction[i]);
+//                os.fileOperator.append(path, b, b.length);
+//               // os.fileOperator.close(path);
+////
+//            }
         }else{
                 closeOs();
                 cmdView.setEditable(false);
