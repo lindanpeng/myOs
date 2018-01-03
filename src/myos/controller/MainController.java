@@ -257,6 +257,7 @@ public class MainController implements Initializable {
                                     notepadController.closeFile();
                                 } catch (Exception e) {
                                     e.printStackTrace();
+
                                 }
                             }
                         });
