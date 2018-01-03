@@ -22,17 +22,30 @@ public class OS {
     public static Memory memory;//内存
     public static Clock clock;//时钟
     public static volatile boolean launched;
-    public static MainController mainController;//界面控制类
+    public  MainController mainController;//界面控制类
+    public static OS os;
+    static {
+        try {
+            initDisk();
+            disk = new RandomAccessFile(OsConstant.DISK_FILE, "rw");
+            memory = new Memory();
+            cpu = new CPU();
+            clock = new Clock();
+            processCreator = new ProcessCreator();
+            fileOperator = new FileOperator();
+            os=new OS();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-    public OS(MainController mainController) throws Exception {
-        initDisk();
-        this.mainController = mainController;
-        disk= new RandomAccessFile(OsConstant.DISK_FILE, "rw");
-        memory = new Memory();
-        cpu = new CPU();
-        clock = new Clock();
-        processCreator = new ProcessCreator();
-        fileOperator = new FileOperator();
+    private OS() throws Exception {
+//        disk = new RandomAccessFile(OsConstant.DISK_FILE, "rw");
+//        memory = new Memory();
+//        cpu = new CPU();
+//        clock = new Clock();
+//        processCreator = new ProcessCreator();
+//        fileOperator = new FileOperator();
     }
 
     /**
@@ -48,7 +61,7 @@ public class OS {
     /**
      * 初始化模拟磁盘
      */
-    void initDisk() {
+   static void initDisk() {
         File file = new File(OsConstant.DISK_FILE);
         FileOutputStream fout = null;
         //判断模拟磁盘是否已经创建
@@ -69,10 +82,10 @@ public class OS {
                     if (i == 2) {
 
                         bytes[0] = 'r';//根目录名为rt
-                        bytes[1] = 't';
-                        bytes[2] = 0;
-                        bytes[3] = ' ';//保留空格
-                        bytes[4] = ' ';//保留空格
+                        bytes[1] = 'o';
+                        bytes[2] = 'o';
+                        bytes[3] = 't';
+                        bytes[4] = 0;
                         bytes[5] = Byte.parseByte("00001000", 2);//目录属性
                         bytes[6] = -1;//起始盘号
                         bytes[7] = 0;//保留一字节未使用
@@ -99,7 +112,7 @@ public class OS {
             }
 
         } else {
-            java.lang.System.out.println("模拟磁盘已存在，无需重新创建");
+            System.out.println("模拟磁盘已存在，无需重新创建");
         }
 
     }
@@ -112,39 +125,51 @@ public class OS {
         new Thread(clock).start();
 
     }
+    public static synchronized  OS getInstance( ) throws Exception {
+        return os;
+    }
 
     /**
      * 关闭系统资源
      */
     public void close() {
-            launched = false;
+        launched = false;
     }
 
-    public static RandomAccessFile getDisk() {
-        return disk;
+//    public static RandomAccessFile getDisk() {
+//        return disk;
+//    }
+//
+//    public static FileOperator getFileOperator() {
+//        return fileOperator;
+//    }
+//
+//    public static ProcessCreator getProcessCreator() {
+//        return processCreator;
+//    }
+//
+//    public static CPU getCpu() {
+//        return cpu;
+//    }
+//
+//    public static Memory getMemory() {
+//        return memory;
+//    }
+//
+//    public static Clock getClock() {
+//        return clock;
+//    }
+//
+//    public static boolean isLaunched() {
+//        return launched;
+//    }
+
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
+        fileOperator.setMainController(mainController);
     }
 
-    public static FileOperator getFileOperator() {
-        return fileOperator;
-    }
-
-    public static ProcessCreator getProcessCreator() {
-        return processCreator;
-    }
-
-    public static CPU getCpu() {
-        return cpu;
-    }
-
-    public static Memory getMemory() {
-        return memory;
-    }
-
-    public static Clock getClock() {
-        return clock;
-    }
-
-    public static boolean isLaunched() {
-        return launched;
+    public MainController getMainController() {
+        return mainController;
     }
 }

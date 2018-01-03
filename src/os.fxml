@@ -32,7 +32,7 @@
                   </Pane>
                   <Pane prefHeight="47.0" prefWidth="95.0">
                      <children>
-                        <Button fx:id="startBtn" layoutX="-1.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#launchOS" prefHeight="33.0" prefWidth="95.0" text="启动系统" />
+                        <Button fx:id="osSwitchBtn" layoutX="-1.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#osSwitch" prefHeight="33.0" prefWidth="95.0" text="启动系统" />
                      </children>
                   </Pane>
                </children>
@@ -267,7 +267,7 @@
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="150.0">
                            <children>
-                              <TextArea fx:id="cmdView" layoutX="19.0" layoutY="9.0" onKeyReleased="#executeCMD" prefHeight="180.0" prefWidth="294.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <TextArea fx:id="cmdView" editable="false" layoutX="19.0" layoutY="9.0" onKeyReleased="#executeCMD" prefHeight="180.0" prefWidth="294.0" style="-fx-control-inner-background: black; -fx-text-fill: white;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                         </AnchorPane>
                     </content>

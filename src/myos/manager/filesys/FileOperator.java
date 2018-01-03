@@ -31,7 +31,6 @@ public class FileOperator {
         this.processCreator = OS.processCreator;
         this.disk = OS.disk;
         this.openedFiles = new ArrayList<>();
-        this.mainController = OS.mainController;
 
     }
     public void init() throws Exception {
@@ -147,7 +146,24 @@ public class FileOperator {
         byte[] instructions = read(openedFile, -1);
         processCreator.create(instructions);
     }
+    public void copy(String srcFilePath,String desFilePath) throws Exception {
+        OpenedFile openedFile1=null,openedFile2=null;
+        try {
+             openedFile1 = open(srcFilePath, OpenedFile.OP_TYPE_READ);
+            create(desFilePath, openedFile1.getCatalog().getProperty());
+             openedFile2 = open(desFilePath, OpenedFile.OP_TYPE_WRITE);
+            byte[] content = read(openedFile1, -1);
+            write(openedFile2, content, content.length);
+        }catch (Exception e){
+            throw e;
+        }finally {
+            if (openedFile1!=null)
+            close(openedFile1);
+            if (openedFile2!=null)
+            close(openedFile2);
+        }
 
+    }
     /**
      * 读取文件
      *
@@ -189,16 +205,8 @@ public class FileOperator {
      *
      * @param filePath 文件名
      */
-    public void close(String filePath) throws Exception {
-        OpenedFile openedFile = getOpenedFile(filePath);
-        if (!openedFiles.contains(openedFile))
-            throw new Exception("文件未打开！");
-        //由于本程序的写操作默认在结尾追加#号，所以不需要追加文件结束符
-//        if (openedFile.getOpType()==OpenedFile.OP_TYPE_WRITE){
-//            byte[] bytes=new byte[1];
-//            bytes[0]='#';
-//            append(openedFile,bytes,1);
-//        }
+    public void close(OpenedFile openedFile) throws Exception {
+
         openedFiles.remove(openedFile);
 
     }
@@ -285,9 +293,9 @@ public class FileOperator {
      * @param filePath 文件名
      */
     public String type(String filePath) throws Exception {
-        open(filePath,OpenedFile.OP_TYPE_READ);
-        byte[] content = read(filePath, -1);
-        close(filePath);
+        OpenedFile openedFile=open(filePath,OpenedFile.OP_TYPE_READ);
+        byte[] content = read(openedFile, -1);
+        close(openedFile);
         return new String(content);
     }
 
@@ -374,8 +382,8 @@ public class FileOperator {
      * @param length
      * @return
      */
-    private byte[] read(OpenedFile openedFile, int length) throws Exception {
-        if (openedFile.getOpType() != OpenedFile.OP_TYPE_READ && openedFile.getOpType() != OpenedFile.OP_TYPE_RUN)
+    public  byte[] read(OpenedFile openedFile, int length) throws Exception {
+        if (openedFile.getOpType() != OpenedFile.OP_TYPE_READ && openedFile.getOpType() != OpenedFile.OP_TYPE_READ_WRITE&&openedFile.getOpType()!=OpenedFile.OP_TYPE_RUN)
             throw new Exception("文件不处于读或运行模式,不能读取");
         int readByte = 0;
         //1.文件内容不够长
@@ -411,11 +419,13 @@ public class FileOperator {
      * @param length
      * @throws Exception
      */
-    private void write(OpenedFile openedFile, byte[] buffer, int length) throws Exception {
-        if (openedFile.getOpType() != OpenedFile.OP_TYPE_WRITE)
+    public void write(OpenedFile openedFile, byte[] buffer, int length) throws Exception {
+        if (openedFile.getOpType() != OpenedFile.OP_TYPE_WRITE&&openedFile.getOpType()!=OpenedFile.OP_TYPE_READ_WRITE)
             throw new Exception("文件不处于写模式,不能写入");
         Pointer pointer = openedFile.getWritePointer();
         Catalog catalog = openedFile.getCatalog();
+        pointer.setBlockNo(catalog.getStartBlock());
+        pointer.setAddress(0);
         int writtenBytes = 0;
         while (writtenBytes != length) {
             if (pointer.getAddress() == OsConstant.DISK_BLOCK_SIZE) {
@@ -655,4 +665,7 @@ public class FileOperator {
         return false;
     }
 
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
 }

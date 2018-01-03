@@ -15,8 +15,8 @@ public class Catalog {
     private byte[] bytes;
     //文件名
     private String name;
-    //文件类型，如果是目录则为空格
-    private String type;
+//    //文件类型，如果是目录则为空格
+//    private String type;
     //文件属性
     private int property;
     //文件内容起始盘号
@@ -39,8 +39,8 @@ public class Catalog {
 
     public Catalog(byte[] bytes){
         this.bytes=bytes;
-        this.name=new String(bytes,0,3);
-        this.type=new String(bytes,3,2);
+        this.name=new String(bytes,0,5);
+      //  this.type=new String(bytes,3,2);
         setProperty(bytes[5]);
         this.startBlock=bytes[6];
         if (property>>4==1){
@@ -69,7 +69,7 @@ public class Catalog {
         }
         else
             isDirectory=false;
-        this.setType("  ");
+     //   this.setType("  ");
         this.isBlank=true;
     }
 
@@ -80,25 +80,25 @@ public class Catalog {
     public void setName(String name) throws Exception {
         this.name = name;
         byte[] nameBytes=name.getBytes();
-        if (nameBytes.length>3)
+        if (nameBytes.length>5)
             throw new Exception("文件名过长！");
        for (int i=0;i<nameBytes.length;i++){
            bytes[i]=nameBytes[i];
        }
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) throws Exception {
-        this.type = type;
-        byte[] typeBytes=type.getBytes();
-        if (type.length()>2)
-            throw new Exception("类型名过长");
-        bytes[3]=typeBytes[0];
-        bytes[4]=typeBytes[1];
-    }
+//    public String getType() {
+//        return type;
+//    }
+//
+//    public void setType(String type) throws Exception {
+//        this.type = type;
+//        byte[] typeBytes=type.getBytes();
+//        if (type.length()>2)
+//            throw new Exception("类型名过长");
+//        bytes[3]=typeBytes[0];
+//        bytes[4]=typeBytes[1];
+//    }
 
     public int getProperty() {
         return property;

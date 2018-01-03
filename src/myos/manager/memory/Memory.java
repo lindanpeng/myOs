@@ -35,6 +35,7 @@ public class Memory {
     public void init(){
         Arrays.fill(userArea,(byte) 0);
         waitPCB.removeAll(waitPCB);
+        blockPCB.removeAll(blockPCB);
         hangOutPCB.setStatus(PCB.STATUS_RUN);
         runningPCB=hangOutPCB;
         subAreas.removeAll(subAreas);
