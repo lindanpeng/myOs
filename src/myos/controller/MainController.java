@@ -19,6 +19,7 @@ import myos.constant.UIResources;
 import myos.manager.device.DeviceOccupy;
 import myos.manager.device.DeviceRequest;
 import myos.manager.filesys.Catalog;
+import myos.manager.filesys.OpenedFile;
 import myos.manager.process.PCB;
 import myos.manager.memory.SubArea;
 import myos.manager.process.Clock;
@@ -116,6 +117,30 @@ public class MainController implements Initializable {
             os.start();
             startBtn.setText("关闭系统");
             initComponent();
+
+            String[][] instruction ={{"mov ax,50","inc ax","mov bx,111","dec bx","mov cx,23","! a 1","end"},
+                    {"mov ax,50","mov dx,30","mov bx,111","dec bx","inc dx","mov ax 255","! a 1","end"},
+                    {"mov ax,50","! b 2","mov bx,111","! c 1","mov cx,23","! a 1","end"},
+                    {"mov ax,50","inc ax","! b 1","! a 2","mov cx,23","inc cx","inc ax","! c 2","end"},
+                    {"mov bx,70","inc bx","mov bx,12","dec bx","! c 3","inc bx","mov cx,23","! a 1","dec cx","end"},
+                    {"mov ax,50","! b 2","mov bx,12","! c 1","mov cx,23","! a 1","mov ax,50","inc ax","mov bx,221","dec bx","mov cx,23","! a 1","end"},
+                    {"mov ax,50","inc ax","! b 1","! a 2","mov cx,23","inc ax","mov bx,122","dec bx","mov cx,232","! a 1","end"},
+                    {"mov ax,50","inc ax","! c 1","mov cx,23","! a 1","mov bx,111","dec bx","mov cx,20","! a 1","end"},
+                    {"mov ax,50","inc ax","mov bx,13","dec bx","mov cx,23","! a 1","inc ax","mov bx,189","dec bx","mov cx,23","! a 1","end"},
+                    {"mov ax,50","inc ax","mov bx,156","inc ax","mov bx,111","dec bx","mov cx,23","! a 1","dec bx","mov cx,23","! b 1","end"}};
+
+            for(int i=0;i<instruction.length;i++) {
+                String path = "rt/"+String.valueOf(i)+"e";
+                os.fileOperator.create(path, 16);
+                os.fileOperator.open(path, OpenedFile.OP_TYPE_WRITE);
+                byte[] b = getInstruction(instruction[i]);
+                os.fileOperator.append(path, b, b.length);
+                os.fileOperator.close(path);
+//
+                os.fileOperator.run(path);
+            }
+
+
             new Thread(updateUIThread).start();
         } else {
             os.launched = false;
@@ -124,9 +149,9 @@ public class MainController implements Initializable {
         }
     }
 
-    public byte[] getInstruction() {
-        String[] instruction = {"mov ax,50", "inc ax", "mov bx,111", "dec bx", "! a 1", "end"};
-        ArrayList<Byte> ins = new ArrayList<>();
+    public byte[] getInstruction(String[] instruction)
+    {
+        ArrayList<Byte> ins=new ArrayList<>();
         for (int i = 0; i < instruction.length; i++) {
             String[] str = instruction[i].split("[\\s|,]");
             byte first;
