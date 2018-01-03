@@ -113,6 +113,16 @@ public class FileOperator {
     }
 
     /**
+     * 格式化硬盘
+     * @throws Exception
+     */
+    public void format() throws Exception {
+        Catalog root=readCatalog(2);
+        for (Catalog catalog:root.list()){
+            delete(root,catalog);
+        }
+    }
+    /**
      * 运行文件
      *
      * @param filePath
@@ -323,23 +333,23 @@ public class FileOperator {
         create(dirPath, 8);
     }
 
-    /**
-     * 显示目录的内容
-     *
-     * @param dirPath
-     */
-    public List<Catalog> dir(String dirPath) throws Exception {
-        int catalogBlock = getCatalogBlock(dirPath, 2);
-        List<Catalog> catalogs = new ArrayList<>();
-        Catalog catalog = readCatalog(catalogBlock);
-        int nextBlock = catalog.getStartBlock();
-        while (nextBlock != -1) {
-            Catalog c = readCatalog(nextBlock);
-            catalogs.add(c);
-            nextBlock = getNextBlock(nextBlock);
-        }
-        return catalogs;
-    }
+//    /**
+//     * 显示目录的内容
+//     *
+//     * @param dirPath
+//     */
+//    public List<Catalog> dir(String dirPath) throws Exception {
+//        int catalogBlock = getCatalogBlock(dirPath, 2);
+//        List<Catalog> catalogs = new ArrayList<>();
+//        Catalog catalog = readCatalog(catalogBlock);
+//        int nextBlock = catalog.getStartBlock();
+//        while (nextBlock != -1) {
+//            Catalog c = readCatalog(nextBlock);
+//            catalogs.add(c);
+//            nextBlock = getNextBlock(nextBlock);
+//        }
+//        return catalogs;
+//    }
 
     /**
      * TODO 删除目录

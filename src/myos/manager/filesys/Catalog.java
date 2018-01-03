@@ -107,7 +107,16 @@ public class Catalog {
     public void setProperty(int property) {
         this.property = property;
         bytes[5]=(byte)property;
-
+        if (property>>4==1){
+            executable=true;
+        }else{
+            executable=false;
+        }
+         if (property>>3==1){
+            isDirectory=true;
+        }else {
+             isDirectory=false;
+         }
     }
 
     public int getStartBlock() {

@@ -214,8 +214,8 @@ public class MainController implements Initializable {
             String[] str = cmdView.getText().split("\\n");
             String s = str[str.length - 1];
             String[] instruction = s.trim().split("\\s+");
-            if (instruction.length > 1) {
-                System.out.println(instruction[0] + " " + instruction[1]);
+
+//                System.out.println(instruction[0] + " " + instruction[1]);
                 try {
                     if (instruction[0].equals("create")) {
                         os.fileOperator.create(instruction[1], 4);
@@ -267,6 +267,10 @@ public class MainController implements Initializable {
                         os.fileOperator.copy(instruction[1],instruction[2]);
                         cmdView.appendText("-> 复制文件成功\n");
                     }
+                    else if (instruction[0].equals("format")){
+                        os.fileOperator.format();
+                        cmdView.appendText("-> 格式化硬盘成功\n");
+                    }
                     else {
                         cmdView.appendText("-> 指令不存在\n");
                         return;
@@ -276,11 +280,8 @@ public class MainController implements Initializable {
                     String[] exception = ex.toString().split(":");
                     cmdView.appendText("-> " + exception[exception.length - 1].trim() + "\n");
                 }
-            } else {
-                cmdView.appendText("-> 请按正确格式输入指令\n");
-                return;
             }
-        }
+
     }
 
 
