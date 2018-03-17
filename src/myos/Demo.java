@@ -32,18 +32,23 @@ public class Demo {
 //        executorService.shutdownNow();
 //        executorService.execute(b1);
 //        executorService.execute(b2);
-        String srt="str";
-        List<String> list=new ArrayList<>();
-        list.add(srt);
-        list.add(srt);
-        System.out.println(list.size());
+       A a=new B();
+       System.out.println(A.aFun(3));
+
+    }
+    protected  void test(){
+
     }
 }
 
 class A{
     protected  String name="hello";
     public A(){
-
+        Demo demo=new Demo();
+        demo.test();
+    }
+    public static int aFun(int n){
+        return n*n;
     }
 }
 class B extends A implements Runnable{
@@ -52,7 +57,10 @@ class B extends A implements Runnable{
         super();
 
     }
-
+   public static int aFun(int n){
+        int m=A.aFun(n);
+        return m+n;
+   }
     @Override
     public void run() {
         try {

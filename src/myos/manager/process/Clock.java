@@ -38,7 +38,7 @@ public class Clock implements Runnable {
                 restTime=(restTime+TIMESLICE_LENGTH-TIMESLICE_UNIT/1000)%TIMESLICE_LENGTH;
                 //时间片到了
                 if (restTime==0){
-                    System.out.println("时间片用完了");
+              //      System.out.println("时间片用完了");
                     cpu.lock.lock();
                     cpu.toReady();
                     cpu.dispatch();

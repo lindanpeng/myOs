@@ -118,9 +118,9 @@ public class MainController implements Initializable {
             launchOS();
             cmdView.setEditable(true);
             osSwitchBtn.setText("关闭系统");
-//            String[][] instruction = {{"mov ax,50", "inc ax", "mov bx,111", "dec bx", "mov cx,23", "! a 1", "end"},
-//                    {"mov ax,50", "mov dx,30", "mov bx,111", "dec bx", "inc dx", "mov ax 25", "! a 1", "end"},
-//                    {"mov ax,50", "! b 2", "mov bx,111", "! c 1", "mov cx,23", "! a 1", "end"},
+//            String[][] instruction = {{"mov ax,50", "inc ax", "mov bx,111", "dec bx", "mov cx,23", "! a 2", "end"},
+//                    {"mov ax,50", "mov dx,30", "! b 2", "dec bx", "inc dx", "mov ax 25", "end"},
+//                    {"mov ax,50", "! c 3", "mov bx,111", "! c 1", "mov cx,23", "! a 1", "end"},
 //                    {"mov ax,50", "inc ax", "! b 1", "! a 2", "mov cx,23", "inc cx", "inc ax", "! c 2", "end"},
 //                    {"mov bx,70", "inc bx", "mov bx,12", "dec bx", "! c 3", "inc bx", "mov cx,23", "! a 1", "dec cx", "end"},
 //                    {"mov ax,50", "! b 2", "mov bx,12", "! c 1", "mov cx,23", "! a 1", "mov ax,50", "inc ax", "mov bx,21", "dec bx", "mov cx,23", "! a 1", "end"},
@@ -158,7 +158,7 @@ public class MainController implements Initializable {
                         second = 0;
                     else if (str[1].contains("b")) {
                         second = 4;
-                    } else if (str[1].contains("b")) {
+                    } else if (str[1].contains("c")) {
                         second = 8;
                     } else {
                         second = 12;

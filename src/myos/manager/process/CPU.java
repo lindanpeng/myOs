@@ -111,15 +111,16 @@ public class CPU implements Runnable {
                         case 2:deviceName="C";break;
                     }
 
-                        result +="! Device: "+DR+", Time:"+SR;
+                    result +="! Device: "+DR+", Time:"+SR;
                     DeviceRequest deviceRequest=new DeviceRequest();
                     deviceRequest.setDeviceName(deviceName);
-                    deviceRequest.setWorkTime(SR*10000);
+                    deviceRequest.setWorkTime(SR*5000);
                     deviceRequest.setPcb(memory.getRunningPCB());
+                    deviceManager.requestDevice(deviceRequest);
                     //阻塞进程
                     block();
                     dispatch();
-                    deviceManager.requestDevice(deviceRequest);
+
                     break;
                 case 4:result += "END";
                         destroy();    //END
@@ -208,6 +209,7 @@ public class CPU implements Runnable {
      */
     public void toReady(){
         PCB pcb=memory.getRunningPCB();
+        System.out.println("进程"+pcb.getPID()+"被放入就绪队列");
         memory.getWaitPCB().offer(pcb);
         pcb.setStatus(PCB.STATUS_WAIT);
     }
@@ -220,7 +222,6 @@ public class CPU implements Runnable {
         pcb.setStatus(PCB.STATUS_BLOCK);
         //将进程链入对应的阻塞队列，然后转向进程调度
         memory.getBlockPCB().add(pcb);
-        dispatch();
     }
 
     /**
@@ -228,7 +229,7 @@ public class CPU implements Runnable {
      */
     public void awake(PCB pcb){
         lock.lock();
-        System.out.println("唤醒进程"+pcb.getPID());
+       // System.out.println("唤醒进程"+pcb.getPID());
         //将进程从阻塞队列中调入到就绪队列
         pcb.setStatus(PCB.STATUS_WAIT);
         pcb.setEvent(PCB.EVENT_NOTING);
@@ -242,7 +243,7 @@ public class CPU implements Runnable {
      * @param pcb
      */
     private void  saveContext(PCB pcb){
-        System.out.println("保留现场");
+     //   System.out.println("保留现场");
         pcb.setCounter(PC);
         pcb.setAX(this.AX);
         pcb.setBX(this.BX);
@@ -254,7 +255,7 @@ public class CPU implements Runnable {
      * 恢复现场
      */
     private void recoveryContext(PCB pcb){
-        System.out.println("恢复现场");
+  //      System.out.println("恢复现场");
         pcb.setStatus(PCB.STATUS_RUN);
         this.AX=pcb.getAX();
         this.BX=pcb.getBX();

@@ -53,7 +53,7 @@ public class FileOperator {
 
         int newFilePos = firstFreeBlock();
         if (newFilePos == -1)
-            throw new Exception("内存不足");
+            throw new Exception("硬盘空间不足");
         SplitFilePath splitFilePath = splitPathAndFileName(filePath);
         int parentCatalogBlockPos = getCatalogBlock(splitFilePath.getPath(), 2);//找到该文件父目录所在磁盘块
         Catalog parentDir = readCatalog(parentCatalogBlockPos);
@@ -119,7 +119,10 @@ public class FileOperator {
     public void format() throws Exception {
         Catalog root=readCatalog(2);
         for (Catalog catalog:root.list()){
+            if(!catalog.isDirectory())
             delete(root,catalog);
+            else
+                rmdir(root,catalog);
         }
     }
     /**

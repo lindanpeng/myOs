@@ -20,6 +20,7 @@ import java.net.URL;
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
+        Demo demo=new Demo();
         FXMLLoader fxmlLoader=new FXMLLoader();
         fxmlLoader.setLocation(getClass().getResource("/os.fxml"));
         fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());

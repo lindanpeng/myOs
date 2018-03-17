@@ -28,7 +28,7 @@ public class DeviceManager{
         b=new B(3);//B设备3个
         c=new C(3);//C设备3个
         usingDevices =new DelayQueue<>();
-        waitForDevice=new ArrayBlockingQueue<>(10);
+        waitForDevice=new ArrayBlockingQueue<>(20);
         this.cpu=cpu;
     }
     public void  init(){
@@ -47,7 +47,6 @@ public class DeviceManager{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
             }
         }).start();
         //处理设备申请请求线程
@@ -62,8 +61,8 @@ public class DeviceManager{
                             //如果有设备空闲就使用设备
                             if (a.getCount()>0){
                                 //可用设备减1
-                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
-                                System.out.println(a.decreaseCount());
+                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给进程"+deviceRequest.getPcb().getPID());
+                                a.decreaseCount();
                                 usingDevices.put(deviceOccupy);
                             }
                             //否则将设备请求重新放到请求队列中
@@ -76,7 +75,7 @@ public class DeviceManager{
                             //如果有B设备空闲就使用设备
                             if (b.getCount()>0){
                                 //可用设备减1
-                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
+                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给进程"+deviceRequest.getPcb().getPID());
                                 b.decreaseCount();
                                 usingDevices.put(deviceOccupy);
                             }
@@ -90,7 +89,7 @@ public class DeviceManager{
                             //如果有C设备空闲就使用设备
                             if (c.getCount()>0){
                                 //可用设备减1
-                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给该进程");
+                                System.out.println("设备"+deviceRequest.getDeviceName()+"可用,分配给进程"+deviceRequest.getPcb().getPID());
                                 c.decreaseCount();
                                 usingDevices.put(deviceOccupy);
                             }
@@ -114,7 +113,7 @@ public class DeviceManager{
      */
     public void requestDevice(DeviceRequest deviceRequest){
         try {
-            System.out.println("请求使用设备"+deviceRequest.getDeviceName());
+            System.out.println("进程"+deviceRequest.getPcb().getPID()+"请求使用设备"+deviceRequest.getDeviceName());
             waitForDevice.put(deviceRequest);
         } catch (InterruptedException e) {
             e.printStackTrace();
